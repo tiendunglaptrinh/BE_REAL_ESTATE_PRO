@@ -1,5 +1,5 @@
 import Account from "./../models/AccountModel.js";
-import HashPassword from "../utils/hash.js";
+import { HashPassword } from "../utils/hash.js";
 
 class AccountService {
   createAccount = async (userData, response) => {

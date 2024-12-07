@@ -2,6 +2,7 @@ import Account from "../models/AccountModel.js";
 import validator from "validator";
 import AccountService from "../services/accountService.js";
 import OCRService from "../services/ocrService.js";
+import { CompareHash } from "../utils/hash.js";
 
 class AccountController {
   // [GET] - Get all accounts
@@ -223,6 +224,55 @@ class AccountController {
       next(error);
     }
   };
+  login = async (req, res, next) => {
+    try {
+      const { info_user, password } = req.body;
+
+      if (!info_user || !password){
+        return res.status(422).json({
+          success: false,
+          message: "Vui lòng nhập đủ các trường thông tin !!!"
+        })
+      }
+
+      const userAccount = await Account.findOne({
+        $or: [
+          { email: info_user }, // Kiểm tra theo email
+          { phone: info_user }   // Kiểm tra theo số điện thoại
+        ]
+      });
+
+      if (userAccount){
+        const isMatch = await CompareHash(password, userAccount.password);
+        if (isMatch){
+          return res.status(200).json({
+            success: true,
+            message: "Đăng nhập thành công !!!"
+          })
+        }
+        else{
+          return res.status(422).json({
+            success: false,
+            message: "Mật khẩu không đúng. Vui lòng kiểm tra lại !!!"
+          })
+        }
+      }
+      else {
+        return res.status(422).json({
+          success: false,
+          message: "Tài khoản không tồn tại trong hệ thống !!!"
+        })
+      }
+      // Check info user
+    }
+    catch (error){
+      return res.status(500).json({
+        success: false,
+        error: error.message
+      });
+      next(error);
+    }
+  }
 }
 
 const  calculateAge = ((date) => {
