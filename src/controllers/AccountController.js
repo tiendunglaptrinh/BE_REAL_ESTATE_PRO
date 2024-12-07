@@ -104,6 +104,7 @@ class AccountController {
           message: "Email này đã tồn tại trong hệ thống!",
         });
       }
+      const step = 1;
       const accountData = {
         fullname,
         phone,
@@ -113,6 +114,7 @@ class AccountController {
         CCCD, 
         date_issue,
         location_issue,
+        step
       };
       console.log("Account Data: ", accountData);
       if (!req.session) {
@@ -123,7 +125,7 @@ class AccountController {
 
       return res.status(200).json({
         message: "Bước 1 hoàn tất",
-        step: 2,
+        next_step: 2,
         current_data: accountData
       });
     } catch (error) {
@@ -149,6 +151,7 @@ class AccountController {
           message: "Chưa nhập các thông tin cơ bản ở bước 1 !!!",
         });
       }
+      accountData.step = 2;
 
       const ocrResult = await OCRService.verifyOCR(imageOCR, accountData);
 
@@ -156,7 +159,7 @@ class AccountController {
         return res.status(200).json({
           message: "Xác thực OCR thành công !!!",
           current_data: accountData,
-          step: 3
+          nex_step: 3
         })
       } else {
         res.status(422).json({ message: "Xác thực OCR thất bại. Thông tin được nhập không trùng khớp !!!" });
@@ -189,6 +192,13 @@ class AccountController {
         return res.status(422).json({
           success: false,
           message: "Chưa nhập các thông tin cơ bản ở bước 1 !!!",
+        });
+      }
+
+      if (accountData.step == 1){
+        return res.status(422).json({
+          success: false,
+          message: "Chưa xác thực OCR ở bước 2 !!!",
         });
       }
 

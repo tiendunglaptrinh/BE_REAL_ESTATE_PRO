@@ -13,8 +13,8 @@ const Account = mongoose.Schema(
     money_in_wallet: { type: Number, required: true, default: 0 },
     active: { type: Boolean, default: false },
     status: { type: String, enum: ["normal", "banned", "warnned"], default: 'normal' },
-    access_token: { type: String, required: true },
-    refresh_token: { type: String, required: true },
+    access_token: { type: String },
+    refresh_token: { type: String },
   },
   { timestamps: true }
 );

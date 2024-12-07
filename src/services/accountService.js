@@ -19,8 +19,6 @@ class AccountService {
         money_in_wallet: 0,
         active: false,
         status: "normal",
-        access_token: "your_generated_access_token",
-        refresh_token: "your_generated_refresh_token",
       });
 
       console.log("Information of account: ", account);
