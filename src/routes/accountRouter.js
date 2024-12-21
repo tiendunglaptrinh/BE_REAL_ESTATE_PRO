@@ -1,10 +1,8 @@
 import express from "express";
 import AccountController from "../controllers/AccountController.js";
-import { authMiddleware, adminAuthMiddleware } from "../middleware/AuthMiddleware.js";
+import { authMiddleware } from "../middleware/AuthMiddleware.js";
 
 const accountRouter = express.Router();
-
-accountRouter.get("/all-accounts", AccountController.getAllAccounts);
 
 accountRouter.post("/create/step1", AccountController.createAccountStep1);
 accountRouter.post("/create/step2", AccountController.createAccountStep2);

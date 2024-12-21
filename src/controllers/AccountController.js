@@ -4,25 +4,6 @@ import AccountService from "../services/accountService.js";
 import OCRService from "../services/ocrService.js";
 
 class AccountController {
-  // [GET] - Get all accounts
-  getAllAccounts = async (req, res, next) => {
-    try {
-      const accounts = await Account.find({});
-      res.status(200).json({
-        success: true,
-        count: accounts.length,
-        data: accounts,
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: "Lỗi khi lấy danh sách tài khoản",
-        error: error.message,
-      });
-      next(error);
-    }
-  };
-
   //[POST] - Create an account - register
   // Step 1:
   // HTTP response 422(Unprocessable Entity) & 409 (Conflict).
