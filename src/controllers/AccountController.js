@@ -247,25 +247,36 @@ class AccountController {
       next(error);
     }
   };
-  
+
   updateInfo = async (req, res, next) => {
     try {
        const { full_name, email, phone, birthday } = req.body;
-       const userId = req.params.id;
-       console.log(">>> check user ID: ", userId);
+       const user_from_reqURL = req.params.id;
+       const user_from_token = req.user.userId;
+       console.log("check id user from url: ", user_from_reqURL);
+       console.log("check id user from token: ", user_from_token);
+      //  Kiểm tra userId từ token và url gửi lên
+       if (user_from_reqURL != user_from_token){
+        return res.status(403).json({
+          success: false,
+          message: "Unauthorization !!!"
+        })
+       }
+      //  Tiếp tục
        if (!full_name || !phone || !email || !birthday){
-        return res.status(401).json({
+        return res.status(400).json({
           success: false,
           message: "Vui lòng nhập thông tin chỉnh sửa đầy đủ !!!"
         })
        }
-       const updateData = { full_name, email, phone, birthday };
+       const userId = user_from_reqURL;
+       const updateData = { userId, full_name, email, phone, birthday };
       return await AccountService.updateInfo(updateData, res);
     }
     catch (error){
       return res.status(500).json({
         message: "Update user failed",
-        error: errow.message
+        error: error.message
       })
     }
   };

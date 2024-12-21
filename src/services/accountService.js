@@ -13,7 +13,7 @@ class AccountService {
         fullname: userData.fullname,
         password: hashedPassword,
         email: userData.email,
-        // birthday: new Date(userData.date_of_birth),
+        birthday: new Date(userData.date_of_birth),
         phone: userData.phone,
         address: userData.address,
         isAdmin: false,
@@ -58,7 +58,7 @@ class AccountService {
     }
   };
   loginService = async (accountLogin, response) => {
-    const { info_user, password } = accountLogin; 
+    const { info_user, password } = accountLogin;
     const userAccount = await Account.findOne({
       $or: [{ email: info_user }, { phone: password }],
     });
@@ -66,15 +66,21 @@ class AccountService {
     if (userAccount) {
       const isMatch = await CompareHash(password, userAccount.password);
       if (isMatch) {
-        const access_token = await generateAccessToken({userId: userAccount._id});
-        const refresh_token = await generateRefreshToken({userId: userAccount._id});
-        console.log(">>> check access token: ", access_token);
-        console.log(">>> check refresh token: ", refresh_token);
+        const access_token = await generateAccessToken({
+          userId: userAccount._id,
+          userRole: userAccount.isAdmin
+        });
+        const refresh_token = await generateRefreshToken({
+          userId: userAccount._id,
+          userRole: userAccount.isAdmin
+        });
+        // console.log(">>> check access token: ", access_token);
+        // console.log(">>> check refresh token: ", refresh_token);
         return response.status(200).json({
           success: true,
           message: "Đăng nhập thành công !!!",
           access_token,
-          refresh_token
+          refresh_token,
         });
       } else {
         return response.status(422).json({
@@ -90,10 +96,35 @@ class AccountService {
     }
   };
   updateInfo = async (userData, response) => {
-    const { full_name, email, phone} = userData;
-    
-
-  }
+    try {
+      const { userId, full_name, email, phone, birthday } = userData;
+      const infoUpdate = { full_name, email, phone, birthday };
+  
+      const user = await Account.findOneAndUpdate({ _id: userId }, infoUpdate, {
+        new: true,
+      });
+  
+      if (!user) {
+        return response.status(404).json({
+          success: false,
+          message: "Không tìm thấy người dùng !!!",
+        });
+      }
+  
+      return response.status(200).json({
+        success: true,
+        message: "Cập nhật thông tin thành công !!!",
+        data: user,
+      });
+    } catch (error) {
+      console.error("Lỗi trong service updateInfo:", error.message); // Debug lỗi
+      return response.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  };
+  
 }
 
 export default new AccountService();
