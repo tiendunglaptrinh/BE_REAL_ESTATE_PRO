@@ -1,5 +1,7 @@
 import Account from "./../models/AccountModel.js";
 import { HashPassword } from "../utils/hash.js";
+import { generateAccessToken, generateRefreshToken } from "./jwtService.js";
+import { CompareHash } from "../utils/hash.js";
 
 class AccountService {
   createAccount = async (userData, response) => {
@@ -25,11 +27,25 @@ class AccountService {
 
       await account.save();
 
+      const acccess_token = generateAccessToken({
+        id: account.id,
+        isAdmin: account.isAdmin,
+      });
+
+      const refresh_token = generateRefreshToken({
+        id: account.id,
+        isAdmin: account.isAdmin,
+      });
+
+      console.log(">>> check access token - login: ", acccess_token);
+      console.log(">>> check refresh token - login: ", refresh_token);
       if (!response.headersSent) {
         return response.status(200).json({
           success: true,
           message: "Đăng ký tài khoản thành công !!!",
           data: account,
+          acccess_token,
+          refresh_token,
         });
       }
     } catch (error) {
@@ -41,6 +57,43 @@ class AccountService {
       });
     }
   };
+  loginService = async (accountLogin, response) => {
+    const { info_user, password } = accountLogin; 
+    const userAccount = await Account.findOne({
+      $or: [{ email: info_user }, { phone: password }],
+    });
+
+    if (userAccount) {
+      const isMatch = await CompareHash(password, userAccount.password);
+      if (isMatch) {
+        const access_token = await generateAccessToken({userId: userAccount._id});
+        const refresh_token = await generateRefreshToken({userId: userAccount._id});
+        console.log(">>> check access token: ", access_token);
+        console.log(">>> check refresh token: ", refresh_token);
+        return response.status(200).json({
+          success: true,
+          message: "Đăng nhập thành công !!!",
+          access_token,
+          refresh_token
+        });
+      } else {
+        return response.status(422).json({
+          success: false,
+          message: "Mật khẩu không đúng. Vui lòng kiểm tra lại !!!",
+        });
+      }
+    } else {
+      return response.status(422).json({
+        success: false,
+        message: "Tài khoản không tồn tại trong hệ thống !!!",
+      });
+    }
+  };
+  updateInfo = async (userData, response) => {
+    const { full_name, email, phone} = userData;
+    
+
+  }
 }
 
 export default new AccountService();
