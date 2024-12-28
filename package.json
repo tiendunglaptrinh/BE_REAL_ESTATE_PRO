@@ -11,17 +11,25 @@
   "author": "tiendunglaptrinh",
   "license": "ISC",
   "dependencies": {
+    "@sequelize/core": "^7.0.0-alpha.43",
+    "@sequelize/postgres": "^7.0.0-alpha.43",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.4.7",
-    "express": "^4.21.1",
+    "express": "^4.21.2",
     "express-session": "^1.18.1",
     "jsonwebtoken": "^9.0.2",
-    "mongodb": "^6.12.0",
-    "mongoose": "^8.8.1",
+    "morgan": "^1.10.0",
+    "pg": "^8.13.1",
+    "pg-hstore": "^2.3.4",
+    "react-router-dom": "^7.1.0",
+    "redis": "^4.7.0",
+    "sequelize": "^6.37.5",
+    "sequelize-typescript": "^2.1.6",
+    "twilio": "^5.4.0",
     "validator": "^13.12.0"
   },
   "devDependencies": {
-    "morgan": "^1.10.0",
     "nodemon": "^3.1.9"
   }
+
 }
