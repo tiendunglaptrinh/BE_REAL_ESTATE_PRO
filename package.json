@@ -11,14 +11,11 @@
   "author": "tiendunglaptrinh",
   "license": "ISC",
   "dependencies": {
-    "@sequelize/core": "^7.0.0-alpha.43",
-    "@sequelize/postgres": "^7.0.0-alpha.43",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.9.2",
     "morgan": "^1.10.0",
     "pg": "^8.13.1",
     "pg-hstore": "^2.3.4",
@@ -32,4 +29,5 @@
   "devDependencies": {
     "nodemon": "^3.1.9"
   }
+
 }
