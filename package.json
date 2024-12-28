@@ -2,7 +2,7 @@
   "name": "backend_dacn",
   "type": "module",
   "version": "1.0.0",
-  "description": "Chi tiết từng phần",
+  "description": "backend",
   "main": "src/app.js",
   "directories": {
     "test": "test"
@@ -25,6 +25,6 @@
   },
   "devDependencies": {
     "morgan": "^1.10.0",
-    "nodemon": "^3.1.7"
+    "nodemon": "^3.1.9"
   }
 }
