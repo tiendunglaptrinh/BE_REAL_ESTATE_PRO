@@ -4,12 +4,9 @@
   "version": "1.0.0",
   "description": "backend",
   "main": "src/app.js",
-  "directories": {
-    "test": "test"
-  },
   "scripts": {
-    "start": "nodemon --inspect src/app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon --inspect src/app.js"
   },
   "author": "tiendunglaptrinh",
   "license": "ISC",
