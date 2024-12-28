@@ -11,25 +11,29 @@ class AccountController {
     try {
       const {
         fullname,
-        phone,
         email,
-        date_of_birth,
+        phone,
+        birthday,
+        sex,
+        province,
+        adress,
         address,
-        CCCD, 
-        date_issue,
-        location_issue,
+        CCCD,
+        dateCCCD,
+        locationCCCD,
       } = req.body;
 
-      console.log("data: ", req.body);
-      // Check: Full information
       if (
         !fullname ||
+        ! email ||
         !phone ||
-        !date_of_birth ||
+        !birthday ||
+        !sex ||
+        !province ||
         !address ||
         !CCCD ||
-        !date_issue ||
-        !location_issue
+        !dateCCCD ||
+        !locationCCCD
       ) {
         return res.status(422).json({
           success: false,
@@ -37,7 +41,7 @@ class AccountController {
         });
       }
       // Check: valid age
-      const age = calculateAge(date_of_birth);
+      const age = calculateAge(birthday);
       if (age < 18) {
         return res.status(422).json({
           success: false,
@@ -88,18 +92,20 @@ class AccountController {
       const step = 1;
       const accountData = {
         fullname,
-        phone,
         email,
-        date_of_birth,
+        phone,
+        birthday,
+        sex,
+        province,
         address,
-        CCCD, 
-        date_issue,
-        location_issue,
-        step
+        CCCD,
+        dateCCCD,
+        locationCCCD,
+        step,
       };
       console.log("Account Data: ", accountData);
       if (!req.session) {
-        req.session = {}; // Khởi tạo session nếu chưa có
+        req.session = {};
       }
 
       req.session.accountData = accountData;
@@ -107,7 +113,7 @@ class AccountController {
       return res.status(200).json({
         message: "Bước 1 hoàn tất",
         next_step: 2,
-        current_data: accountData
+        current_data: accountData,
       });
     } catch (error) {
       res.status(500).json({
@@ -121,7 +127,7 @@ class AccountController {
   // Step 2: OCR authenticate
   createAccountStep2 = async (req, res, next) => {
     try {
-      console.log('Session Data in step 2: ', req.session.accountData);
+      console.log("Session Data in step 2: ", req.session.accountData);
       const { imageOCR } = req.body;
 
       const accountData = req.session.accountData;
@@ -140,10 +146,13 @@ class AccountController {
         return res.status(200).json({
           message: "Xác thực OCR thành công !!!",
           current_data: accountData,
-          nex_step: 3
-        })
+          nex_step: 3,
+        });
       } else {
-        res.status(422).json({ message: "Xác thực OCR thất bại. Thông tin được nhập không trùng khớp !!!" });
+        res.status(422).json({
+          message:
+            "Xác thực OCR thất bại. Thông tin được nhập không trùng khớp !!!",
+        });
       }
     } catch (error) {
       return res.status(500).json({
@@ -157,14 +166,14 @@ class AccountController {
   // Step 3: Password
   createAccountStep3 = async (req, res, next) => {
     try {
-      console.log('Session Data in step 3: ', req.session.accountData);
-      const { password, confirmPassword} = req.body;
+      console.log("Session Data in step 3: ", req.session.accountData);
+      const { password, confirmPassword } = req.body;
 
-      if (!password || !confirmPassword){
+      if (!password || !confirmPassword) {
         return res.status(422).json({
           success: false,
-          message: "Vui lòng nhập đủ thông tin đăng nhập !!!"
-        })
+          message: "Vui lòng nhập đủ thông tin đăng nhập !!!",
+        });
       }
 
       const accountData = req.session.accountData;
@@ -176,7 +185,7 @@ class AccountController {
         });
       }
 
-      if (accountData.step == 1){
+      if (accountData.step == 1) {
         return res.status(422).json({
           success: false,
           message: "Chưa xác thực OCR ở bước 2 !!!",
@@ -184,22 +193,21 @@ class AccountController {
       }
 
       // Compare:
-      if (password !== confirmPassword){
+      if (password !== confirmPassword) {
         return res.status(422).json({
           success: false,
-          message: "Nhập lại mật khẩu chưa chính xác !!!"
-        })
+          message: "Nhập lại mật khẩu chưa chính xác !!!",
+        });
       }
 
       accountData.password = password;
-      
-      // Đăng ký thành công
-      return  await AccountService.createAccount(accountData, res);
 
+      // Đăng ký thành công
+      return await AccountService.createAccount(accountData, res);
     } catch (error) {
       return res.status(500).json({
         success: "Đã có lỗi xảy ra",
-        error: error.message
+        error: error.message,
       });
       next(error);
     }
@@ -209,21 +217,20 @@ class AccountController {
     try {
       const { info_user, password } = req.body;
 
-      if (!info_user || !password){
+      if (!info_user || !password) {
         return res.status(422).json({
           success: false,
-          message: "Vui lòng nhập đủ các trường thông tin !!!"
-        })
+          message: "Vui lòng nhập đủ các trường thông tin !!!",
+        });
       }
 
       // Call: Login Service
       const accountLogin = { info_user, password };
       return await AccountService.loginService(accountLogin, res);
-    }
-    catch (error){
+    } catch (error) {
       return res.status(500).json({
         success: false,
-        error: error.message
+        error: error.message,
       });
       next(error);
     }
@@ -231,44 +238,42 @@ class AccountController {
 
   updateInfo = async (req, res, next) => {
     try {
-       const { full_name, email, phone, birthday } = req.body;
-       const user_from_reqURL = req.params.id;
-       const user_from_token = req.user.userId;
-       console.log("check id user from url: ", user_from_reqURL);
-       console.log("check id user from token: ", user_from_token);
+      const { full_name, email, phone, birthday } = req.body;
+      const user_from_reqURL = req.params.id;
+      const user_from_token = req.user.userId;
+      console.log("check id user from url: ", user_from_reqURL);
+      console.log("check id user from token: ", user_from_token);
       //  Kiểm tra userId từ token và url gửi lên
-       if (user_from_reqURL != user_from_token){
+      if (user_from_reqURL != user_from_token) {
         return res.status(403).json({
           success: false,
-          message: "Unauthorization !!!"
-        })
-       }
+          message: "Unauthorization !!!",
+        });
+      }
       //  Tiếp tục
-       if (!full_name || !phone || !email || !birthday){
+      if (!full_name || !phone || !email || !birthday) {
         return res.status(400).json({
           success: false,
-          message: "Vui lòng nhập thông tin chỉnh sửa đầy đủ !!!"
-        })
-       }
-       const userId = user_from_reqURL;
-       const updateData = { userId, full_name, email, phone, birthday };
+          message: "Vui lòng nhập thông tin chỉnh sửa đầy đủ !!!",
+        });
+      }
+      const userId = user_from_reqURL;
+      const updateData = { userId, full_name, email, phone, birthday };
       return await AccountService.updateInfo(updateData, res);
-    }
-    catch (error){
+    } catch (error) {
       return res.status(500).json({
         message: "Update user failed",
-        error: error.message
-      })
+        error: error.message,
+      });
     }
   };
 }
 
-const  calculateAge = ((date) => {
+const calculateAge = (date) => {
   const birth = new Date(date);
   const ageDifMs = Date.now() - birth.getTime();
   const ageDate = new Date(ageDifMs);
   return Math.abs(ageDate.getUTCFullYear() - 1970);
-});
-
+};
 
 export default new AccountController();

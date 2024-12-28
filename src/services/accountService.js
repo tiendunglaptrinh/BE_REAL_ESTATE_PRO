@@ -11,15 +11,17 @@ class AccountService {
 
       const account = new Account({
         fullname: userData.fullname,
-        password: hashedPassword,
         email: userData.email,
-        birthday: new Date(userData.date_of_birth),
         phone: userData.phone,
+        birthday: new Date(userData.birthday),
+        password: hashedPassword,
+        province: userData.province,
         address: userData.address,
         isAdmin: false,
-        CCCD_id: hashedCCCD,
-        money_in_wallet: 0,
-        active: false,
+        CCCD: hashedCCCD,
+        dateCCCD: userData.dateCCCD,
+        locationCCCD: userData.locationCCCD,
+        wallet: 50000,
         status: "normal",
       });
 
@@ -27,25 +29,11 @@ class AccountService {
 
       await account.save();
 
-      const acccess_token = generateAccessToken({
-        id: account.id,
-        isAdmin: account.isAdmin,
-      });
-
-      const refresh_token = generateRefreshToken({
-        id: account.id,
-        isAdmin: account.isAdmin,
-      });
-
-      console.log(">>> check access token - login: ", acccess_token);
-      console.log(">>> check refresh token - login: ", refresh_token);
       if (!response.headersSent) {
         return response.status(200).json({
           success: true,
           message: "Đăng ký tài khoản thành công !!!",
           data: account,
-          acccess_token,
-          refresh_token,
         });
       }
     } catch (error) {
