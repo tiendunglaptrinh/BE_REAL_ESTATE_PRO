@@ -15,7 +15,7 @@ const Post = mongoose.Schema(
       type: String, // Tỉnh thành
       required: true,
     },
-    district: {
+    ward: {
       type: String, // Quận huyện
       required: true,
     },
@@ -31,13 +31,24 @@ const Post = mongoose.Schema(
       type: Number, // Giá trị bất động sản
       required: true,
     },
-    unitPrice: {
+    unit_price: {
       type: String, // Ví dụ: 'triệu/m2', 'triệu/tháng'
       required: true,
     },
+    discount: { // 10 %,...
+      type: Number,
+      default: 0,
+    },
     interior: {
-      type: Map, // Có thể dùng Map để lưu các nội thất và thông tin khác
-      of: String,
+      type: String,
+    },
+    num_room: {
+      type: Number,
+      default: 0
+    },
+    num_bathroom: {
+      type: Number,
+      default: 0
     },
     title: {
       type: String, // Tiêu đề tin đăng
@@ -54,15 +65,15 @@ const Post = mongoose.Schema(
     video: {
       type: String, // Link video (không bắt buộc)
     },
-    goiTinDang: {
+    post_packet: {
       type: String, // 'Kim Cương', 'Vàng', 'Bạc', 'Thường'
       required: true,
     },
-    gia: {
+    packet_post: {
       type: Number, // Tính tổng tiền của gói
       required: true,
     },
-    user: {
+    user_id: {
       type: mongoose.Schema.Types.ObjectId, // Liên kết tới user (Account)
       ref: "Account", // Tham chiếu đến model 'Account'
       required: true,

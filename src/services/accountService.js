@@ -1,26 +1,50 @@
 import Account from "./../models/AccountModel.js";
 import { HashPassword } from "../utils/hash.js";
-import { generateAccessToken, generateRefreshToken } from "./jwtService.js";
+import {
+  decodeToken,
+  generateAccessToken,
+  generateRefreshToken,
+  getTokenFromHeader,
+} from "./jwtService.js";
 import { CompareHash } from "../utils/hash.js";
+import "dotenv";
+import rateLimitStore from "../utils/rateLimitStore.js";
 
 class AccountService {
   createAccount = async (userData, response) => {
     try {
-      const hashedPassword = await HashPassword(userData.password, 10);
-      const hashedCCCD = await HashPassword(userData.CCCD, 10);
+      console.log(
+        ">>> userData.password:",
+        userData.password,
+        typeof userData.password
+      );
+
+      const hashedPassword = await HashPassword(
+        "password",
+        userData.password,
+        process.env.SALT_ROUND_HASH
+      );
+      const hashedCCCD = await HashPassword(
+        "cccd",
+        userData.cccd,
+        process.env.SALT_ROUND_HASH
+      );
+
+      console.log(">>> check password hash: ", userData.password);
 
       const account = new Account({
         fullname: userData.fullname,
         email: userData.email,
         phone: userData.phone,
         birthday: new Date(userData.birthday),
+        sex: userData.sex,
         password: hashedPassword,
         province: userData.province,
         address: userData.address,
-        isAdmin: false,
-        CCCD: hashedCCCD,
-        dateCCCD: userData.dateCCCD,
-        locationCCCD: userData.locationCCCD,
+        is_admin: false,
+        cccd: hashedCCCD,
+        date_cccd: userData.dateCCCD,
+        location_cccd: userData.locationCCCD,
         wallet: 50000,
         status: "normal",
       });
@@ -47,23 +71,37 @@ class AccountService {
   };
   loginService = async (accountLogin, response) => {
     const { info_user, password } = accountLogin;
+    const now = Date.now();
+
+    // Test state of user in system
+    const loginState = await rateLimitStore.get(info_user);
+    if (loginState?.lock_until && loginState.lock_until > now) {
+      const wait = Math.ceil((loginState.lock_until - now) / 1000);
+      return response.status(429).json({
+        success: false,
+        message: `Tài khoản tạm thời bị khóa. Vui lòng thử lại sau ${wait} giây.`,
+      });
+    }
+
+    // Find user in database
     const userAccount = await Account.findOne({
-      $or: [{ email: info_user }, { phone: password }],
+      $or: [{ email: info_user }, { phone: info_user }],
     });
 
     if (userAccount) {
       const isMatch = await CompareHash(password, userAccount.password);
       if (isMatch) {
+        // Login successfully
+        await rateLimitStore.clear(info_user);
         const access_token = await generateAccessToken({
           userId: userAccount._id,
-          userRole: userAccount.isAdmin
+          userRole: userAccount.isAdmin,
         });
         const refresh_token = await generateRefreshToken({
           userId: userAccount._id,
-          userRole: userAccount.isAdmin
+          userRole: userAccount.isAdmin,
         });
-        // console.log(">>> check access token: ", access_token);
-        // console.log(">>> check refresh token: ", refresh_token);
+
         return response.status(200).json({
           success: true,
           message: "Đăng nhập thành công !!!",
@@ -71,12 +109,21 @@ class AccountService {
           refresh_token,
         });
       } else {
+        await rateLimitStore.recordFailedAttempt(info_user);
+        const updated = await rateLimitStore.get(info_user);
+        const remaining = rateLimitStore.MAX_ATTEMPTS - (updated.failed_attempts || 0);
+        const captcha = updated.captcha_required || false;
         return response.status(422).json({
           success: false,
-          message: "Mật khẩu không đúng. Vui lòng kiểm tra lại !!!",
+          message:
+            remaining > 0
+              ? `Mật khẩu không đúng. Còn ${remaining} lần thử.`
+              : "Tài khoản bị khóa 30 giây vì nhập sai quá nhiều.",
+          captcha_required: captcha,
         });
       }
     } else {
+      await rateLimitStore.recordFailedAttempt(info_user);
       return response.status(422).json({
         success: false,
         message: "Tài khoản không tồn tại trong hệ thống !!!",
@@ -87,18 +134,18 @@ class AccountService {
     try {
       const { userId, full_name, email, phone, birthday } = userData;
       const infoUpdate = { full_name, email, phone, birthday };
-  
+
       const user = await Account.findOneAndUpdate({ _id: userId }, infoUpdate, {
         new: true,
       });
-  
+
       if (!user) {
         return response.status(404).json({
           success: false,
           message: "Không tìm thấy người dùng !!!",
         });
       }
-  
+
       return response.status(200).json({
         success: true,
         message: "Cập nhật thông tin thành công !!!",
@@ -112,7 +159,25 @@ class AccountService {
       });
     }
   };
-  
+  getInfoUser = async (requestAnimationFrame, res) => {
+    try {
+      decodeToken = decodeToken(getTokenfromHeader(req));
+      if (!decodeToken) {
+        return res.status(402).json({
+          success: false,
+          message: "Unauthorization !!!",
+        });
+      }
+      const userId = req.params.id;
+      console.log(">>> check user id: ", userId);
+      console.log(">>> check decodeToken: ", decodeToken);
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: errror.message,
+      });
+    }
+  };
 }
 
 export default new AccountService();

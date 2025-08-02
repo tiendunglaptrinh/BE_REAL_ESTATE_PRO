@@ -48,3 +48,11 @@ Một số gói npm phổ biến cho Node.js backend:
     + Middleware: express, cors, body-parser.
     + Testing: mocha, chai, jest, supertest.
     + Tiện ích: dotenv, lodash, moment.
+
+
+kill task:
+C:\Users\tangu\OneDrive\Desktop\BE_REAL_ESTATE_PRO>tasklist | findstr node
+node.exe                     27036 Console                    6     80,484 K
+
+C:\Users\tangu\OneDrive\Desktop\BE_REAL_ESTATE_PRO>taskkill /F /PID 27036
+SUCCESS: The process with PID 27036 has been terminated.

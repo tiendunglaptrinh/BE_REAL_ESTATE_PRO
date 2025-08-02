@@ -2,7 +2,9 @@ import Account from "../models/AccountModel.js";
 import validator from "validator";
 import AccountService from "../services/accountService.js";
 import OCRService from "../services/ocrService.js";
-
+import OTPEmailService from "../services/otpEmailService.js";
+import { decodeToken, getTokenFromHeader } from "../services/jwtService.js";
+import { HashPassword } from "../utils/hash.js";
 class AccountController {
   //[POST] - Create an account - register
   // Step 1:
@@ -16,31 +18,32 @@ class AccountController {
         birthday,
         sex,
         province,
-        adress,
         address,
-        CCCD,
-        dateCCCD,
-        locationCCCD,
+        cccd,
+        date_cccd,
+        location_cccd,
       } = req.body;
 
+      // Check: Fill fully Information
       if (
         !fullname ||
-        ! email ||
+        !email ||
         !phone ||
         !birthday ||
         !sex ||
         !province ||
         !address ||
-        !CCCD ||
-        !dateCCCD ||
-        !locationCCCD
+        !cccd ||
+        !date_cccd ||
+        !location_cccd
       ) {
         return res.status(422).json({
           success: false,
           message: "Điền đẩy đủ các trường thông tin!!!",
         });
       }
-      // Check: valid age
+
+      // Check: valid age in system
       const age = calculateAge(birthday);
       if (age < 18) {
         return res.status(422).json({
@@ -48,6 +51,7 @@ class AccountController {
           message: "Chưa đủ tuổi để đăng ký sử dụng hệ thống!",
         });
       }
+
       // Check: valid email
       if (!validator.isEmail(email)) {
         return res.status(422).json({
@@ -55,6 +59,7 @@ class AccountController {
           message: "Email được nhập không hợp lệ !!!",
         });
       }
+
       // Check: valid phone
       if (!validator.isMobilePhone(phone, "vi-VN")) {
         return res.status(422).json({
@@ -62,18 +67,20 @@ class AccountController {
           message: "Số điện thoại không hợp lệ. Vui lòng kiểm tra lại",
         });
       }
+
       // Check valid cccd
-      if (!/^\d{12}$/.test(CCCD)) {
+      if (!/^\d{12}$/.test(cccd)) {
         return res.status(422).json({
           success: false,
           message: "Căn cước công dân chưa hợp lệ",
         });
       }
 
-      // Check: duplicate phone & email
-      const [existingPhone, existingEmail] = await Promise.all([
+      // Check: duplicate phone & email & cccd
+      const [existingPhone, existingEmail, existingCccd] = await Promise.all([
         Account.findOne({ phone }),
         Account.findOne({ email }),
+        Account.findOne({ cccd }),
       ]);
 
       if (existingPhone) {
@@ -89,7 +96,20 @@ class AccountController {
           message: "Email này đã tồn tại trong hệ thống!",
         });
       }
-      const step = 1;
+
+      if (existingCccd) {
+        return res.status(409).json({
+          success: false,
+          message: "Căn cước đã tồn tại trong hệ thống!",
+        });
+      }
+
+      const otp = await OTPEmailService.sendOTP(req);
+
+      // Log: All fields of information accepts
+      // info fill: { fullname, email, phone, birthday, sex, province, address, cccd, date_cccd, location_cccd, } = req.body;
+      const step_register = 1;
+      const authen = 0;
       const accountData = {
         fullname,
         email,
@@ -98,12 +118,16 @@ class AccountController {
         sex,
         province,
         address,
-        CCCD,
-        dateCCCD,
-        locationCCCD,
-        step,
+        authen,
+        cccd,
+        date_cccd,
+        location_cccd,
+        step_register,
       };
-      console.log("Account Data: ", accountData);
+      console.log(
+        "[Register] >> Step 1: Account Information After Step 1",
+        accountData
+      );
       if (!req.session) {
         req.session = {};
       }
@@ -111,24 +135,25 @@ class AccountController {
       req.session.accountData = accountData;
 
       return res.status(200).json({
-        message: "Bước 1 hoàn tất",
+        success: true,
+        message: "Bước 1 hoàn tất, otp đã được gửi đi",
         next_step: 2,
         current_data: accountData,
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: "Đã có lỗi xảy ra",
+        message: "Server log: Đã có lỗi xảy ra",
         error: error.message,
       });
       next(error);
     }
   };
-  // Step 2: OCR authenticate
+  // Step 2: OTP send through Email STMP
   createAccountStep2 = async (req, res, next) => {
     try {
       console.log("Session Data in step 2: ", req.session.accountData);
-      const { imageOCR } = req.body;
+      const { otp } = req.body;
 
       const accountData = req.session.accountData;
 
@@ -138,20 +163,26 @@ class AccountController {
           message: "Chưa nhập các thông tin cơ bản ở bước 1 !!!",
         });
       }
-      accountData.step = 2;
 
-      const ocrResult = await OCRService.verifyOCR(imageOCR, accountData);
+      accountData.step_register = 2;
 
-      if (ocrResult) {
+      const otp_result = await OTPEmailService.verifyOTP(
+        accountData.email,
+        otp
+      );
+
+      if (otp_result) {
+        accountData.authen = 1;
         return res.status(200).json({
-          message: "Xác thực OCR thành công !!!",
+          success: true,
+          message: "Xác thực OTP thành công !!!",
           current_data: accountData,
           nex_step: 3,
         });
       } else {
         res.status(422).json({
-          message:
-            "Xác thực OCR thất bại. Thông tin được nhập không trùng khớp !!!",
+          success: false,
+          message: "OTP sai hoặc đã hết hạn. Xác thực OTP không thành công !",
         });
       }
     } catch (error) {
@@ -167,12 +198,18 @@ class AccountController {
   createAccountStep3 = async (req, res, next) => {
     try {
       console.log("Session Data in step 3: ", req.session.accountData);
-      const { password, confirmPassword } = req.body;
+      const { forward_cccd, backward_cccd } = req.body;
 
-      if (!password || !confirmPassword) {
+      if (!forward_cccd) {
         return res.status(422).json({
           success: false,
-          message: "Vui lòng nhập đủ thông tin đăng nhập !!!",
+          message: "Vui lòng upload mặt trước Căn cước công dân",
+        });
+      }
+      if (!backward_cccd) {
+        return res.status(422).json({
+          success: false,
+          message: "Vui lòng upload mặt sau Căn cước công dân",
         });
       }
 
@@ -185,32 +222,94 @@ class AccountController {
         });
       }
 
-      if (accountData.step == 1) {
+      if (accountData.step_register == 1) {
         return res.status(422).json({
           success: false,
-          message: "Chưa xác thực OCR ở bước 2 !!!",
+          message: "Chưa xác thực OTP ở bước 2 !!!",
         });
       }
 
-      // Compare:
-      if (password !== confirmPassword) {
-        return res.status(422).json({
+      // Verify CCCD
+      const ocr_result = await OCRService.verifyOCR(
+        forward_cccd,
+        backward_cccd,
+        res
+      );
+
+      if (ocr_result) {
+        accountData.authen = 2;
+        res.status(200).json({
+          success: true,
+          message: "Xác thực OCR thành công !!!",
+          current_data: accountData,
+          nex_step: 4,
+        });
+      } else {
+        res.status(500).json({
           success: false,
-          message: "Nhập lại mật khẩu chưa chính xác !!!",
+          message: "Xác thực OCR không thành công !!!",
         });
       }
-
-      accountData.password = password;
-
-      // Đăng ký thành công
-      return await AccountService.createAccount(accountData, res);
     } catch (error) {
       return res.status(500).json({
-        success: "Đã có lỗi xảy ra",
+        success: false,
+        message: "Đã có lỗi xảy ra",
         error: error.message,
       });
       next(error);
     }
+  };
+
+  createAccountStep4 = async (req, res, next) => {
+    const { password, confirm_password } = req.body;
+
+    if (!password || !confirm_password) {
+      res.status(422).json({
+        success: false,
+        message: "vui lòng nhập đủ các trường thông tin !"
+      })
+    }
+
+    const accountData = req.session.accountData
+    if (!accountData) {
+        return res.status(422).json({
+          success: false,
+          message: "Vui lòng nhập các thông tin cơ bản trước đó !!!",
+        });
+      }
+
+    if (accountData.step_register == 1) {
+        return res.status(422).json({
+          success: false,
+          message: "Chưa xác thực OTP !!!",
+        });
+      }
+
+
+
+    // Thêm logic bắt buộc phải có chữ thường, chữ số, ký tự đặc biệt, độ dài ít nhất 8 ký tự.
+    if (password.length < 9) {
+      res.status(500).json({
+        success: false,
+        message: "Mật khẩu phải có ít nhất 9 ký tự !"
+      })
+    }
+
+    // Dùng regex để phát hiện có chữ thường, chữ số và ký tự đặc biệt
+    // TODO
+
+    // Check password = confirm_password
+    if (password != confirm_password){
+      res.status(500).json({
+        success: false,
+        message: "Nhập lại mật khẩu chưa khớp !"
+      })
+    }
+
+    accountData.password = password;
+    console.log(">>> check password in account: ", accountData.password);
+
+    return await AccountService.createAccount(accountData, res);
   };
 
   login = async (req, res, next) => {
@@ -266,6 +365,9 @@ class AccountController {
         error: error.message,
       });
     }
+  };
+  getInfoUser = async (req, res) => {
+    return await AccountService.getInfoUser(req, res);
   };
 }
 

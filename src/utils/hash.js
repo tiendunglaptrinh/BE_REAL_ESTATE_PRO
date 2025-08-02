@@ -1,15 +1,15 @@
 import bcrypt from 'bcrypt';
 
-const HashPassword = async (password, round) => {
+const HashPassword = async (name, value, round) => {
   try {
-    if (!password || typeof password !== 'string' || password.trim() === '') {
-      throw new Error('Password is invalid');
+    if (!value || typeof value !== 'string') {
+      console.log(value);
+      throw new Error(`${name} is invalid`);
     }
-    const salt = await bcrypt.genSalt(round);
-    console.log('Generated salt:', salt);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const salt = await bcrypt.genSalt(Number(round));
+    const hashedValue = await bcrypt.hash(value, 10);
     
-    return hashedPassword;
+    return hashedValue;
     
   } catch (error) {
     console.error("Error hashing password:", error);
@@ -28,5 +28,8 @@ const CompareHash = async (password, hash) => {
   }
 };
 
+const DecryptHash = async (password, round) => {
+
+}
 
 export { HashPassword, CompareHash }

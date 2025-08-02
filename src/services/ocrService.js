@@ -1,5 +1,5 @@
 class OCRService{
-    async verifyOCR(imageOCR, accountData){
+    async verifyOCR(forwardImage, backwardImage, accountData){
         return true;
     }
 }
