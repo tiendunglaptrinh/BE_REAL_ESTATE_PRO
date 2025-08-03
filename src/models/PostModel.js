@@ -2,77 +2,29 @@ import mongoose from "mongoose";
 
 const Post = mongoose.Schema(
   {
-    needs: {
-      type: String,
-      enum: ["Bán", "Thuê"],
-      required: true,
-    },
-    address: {
-      type: String,
-      required: true,
-    },
-    province: {
-      type: String, // Tỉnh thành
-      required: true,
-    },
-    ward: {
-      type: String, // Quận huyện
-      required: true,
-    },
-    type: {
-      type: String,
-      required: true,
-    },
-    acreage: {
-      type: Number, // Diện tích của bất động sản
-      required: true,
-    },
-    price: {
-      type: Number, // Giá trị bất động sản
-      required: true,
-    },
-    unit_price: {
-      type: String, // Ví dụ: 'triệu/m2', 'triệu/tháng'
-      required: true,
-    },
-    discount: { // 10 %,...
-      type: Number,
-      default: 0,
-    },
-    interior: {
-      type: String,
-    },
-    num_room: {
-      type: Number,
-      default: 0
-    },
-    num_bathroom: {
-      type: Number,
-      default: 0
-    },
-    title: {
-      type: String, // Tiêu đề tin đăng
-      required: true,
-    },
-    description: {
-      type: String, // Mô tả chi tiết tin đăng
-      required: true,
-    },
-    images: {
-      type: [String], // Các hình ảnh của tin đăng
-      required: true,
-    },
-    video: {
-      type: String, // Link video (không bắt buộc)
-    },
-    post_packet: {
-      type: String, // 'Kim Cương', 'Vàng', 'Bạc', 'Thường'
-      required: true,
-    },
-    packet_post: {
-      type: Number, // Tính tổng tiền của gói
-      required: true,
-    },
+    needs: { type: String, enum: ["Bán", "Thuê"], required: true, },
+    address: { type: String, required: true, },
+    province: { type: String, required: true, },
+    ward: { type: String, required: true, },
+    type: { type: String, required: true, },
+    acreage: { type: Number, required: true, },
+    price: { type: Number, required: true, },
+    unit_price: { type: String, required: true, },
+    discount: { type: Number, default: 0, },
+    interior: { type: String, },
+    num_room: { type: Number, default: 0, },
+    num_bathroom: { type: Number, default: 0, },
+    title: { type: String, required: true, },
+    description: { type: String, required: true, },
+    images: { type: [String], required: true, },
+    video: { type: String, },
+    post_packet: { type: String, required: true, }, 
+    packet_post: { type: Number, required: true, },
+    is_expire: { type: Boolean, required: true },
+    time_expire: { type: Date, required: true },
+    is_traded: { type: Boolean, required: true, default: false, },
+    num_like: { type: Number, default: 0},
+    level_auth: {type: Number, default: 0},
     user_id: {
       type: mongoose.Schema.Types.ObjectId, // Liên kết tới user (Account)
       ref: "Account", // Tham chiếu đến model 'Account'
