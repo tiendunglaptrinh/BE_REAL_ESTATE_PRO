@@ -1,58 +1,118 @@
-Chi tiết từng phần
+# 🏠 REAL ESTATE PRO - Backend API
 
-src/config/:
-    + db.js: Kết nối cơ sở dữ liệu (MongoDB, MySQL, PostgreSQL, etc.).
-    + app.js: Middleware và các cấu hình chung (bodyParser, cors, etc.).
-    + env.js: Quản lý biến môi trường từ .env.
+> Backend service for the REAL ESTATE PRO platform — a real estate management system built with Node.js, Express, and MongoDB.
 
-src/controllers/:
-    + Chứa các hàm xử lý logic chính của API endpoint.
-    + Ví dụ: userController.js có các hàm như getUsers, createUser.
+## 🚀 Features
 
-src/middlewares/:
-    + Chứa các middleware (xử lý xác thực JWT, logging, quản lý lỗi, etc.).
+- RESTful API for real estate listings, user management, and posts
+- Authentication with JWT
+- Role-based access control (Admin/User)
+- Modular service/controller structure
+- Data validation with Joi
+- Pagination, filtering, and sorting support
+- Rate limiting, CORS, and security middlewares
+- Centralized error handling
+- MongoDB Atlas (or local MongoDB) integration
 
-src/models/:
-    + Định nghĩa schema/model cho cơ sở dữ liệu.
-    + Ví dụ: userModel.js định nghĩa cấu trúc user trong MongoDB hoặc Sequelize.
+---
 
-src/routes/:
-    + Xác định các endpoint và ánh xạ chúng tới controller tương ứng.
-    + Ví dụ: userRoutes.js ánh xạ /users đến các hàm trong userController.js.
+## 📁 Folder Structure
 
-src/services/:
-    + Chứa logic nghiệp vụ không nên để trong controller.
-    + Ví dụ: emailService.js gửi email, userService.js quản lý quy trình xử lý dữ liệu user.
+BE_REAL_ESTATE_PRO/
+│
+├── config/ # DB connection, environment configs
+├── controllers/ # API route handlers
+├── middlewares/ # Auth, validation, error handlers
+├── models/ # Mongoose schemas
+├── routes/ # Express route declarations
+├── services/ # Business logic
+├── utils/ # Helper functions
+├── .env # Environment variables
+├── app.js # Entry point
+└── README.md # Project documentation
 
-src/utils/:
-    + Các hàm hoặc module dùng chung (hash password, validate dữ liệu, etc.).
+---
 
-test/:
-    + Chứa các bài test cho từng phần của ứng dụng.
-    + Có thể sử dụng Mocha, Jest hoặc các framework khác.
+## 🔧 Installation
 
-Tệp chính (app.js và server.js):
-    + app.js: Cấu hình ứng dụng chính.
-    + server.js: Chạy server và quản lý lifecycle.
+1. **Clone the repository**
+```bash
+git clone https://github.com/tiendunglaptrinh/BE_REAL_ESTATE_PRO.git
+cd BE_REAL_ESTATE_PRO
+Install dependencies
 
-Tệp .env:
-    + Lưu thông tin nhạy cảm như DB_URL, JWT_SECRET.
+bash
+Copy
+Edit
+npm install
+Create .env file
 
-package.json:
-    + Chứa metadata dự án và các dependency.
+env
+Copy
+Edit
+PORT=5000
+MONGO_URI=mongodb+srv://your_mongo_uri
+JWT_SECRET=your_jwt_secret
+SEND_EMAIL=your_email@example.com
+SEND_EMAIL_PASS=your_email_password
+Run the app
 
+bash
+Copy
+Edit
+# Development mode
+npm run dev
 
-Một số gói npm phổ biến cho Node.js backend:
-    + Cơ sở dữ liệu: mongoose, sequelize, pg.
-    + Bảo mật: bcrypt, jsonwebtoken, helmet.
-    + Middleware: express, cors, body-parser.
-    + Testing: mocha, chai, jest, supertest.
-    + Tiện ích: dotenv, lodash, moment.
+# Production mode
+npm start
+🛠️ API Endpoints
+Base URL: http://localhost:5000/api/v1
 
+🔑 Auth
+POST /auth/register – User registration
 
-kill task:
-C:\Users\tangu\OneDrive\Desktop\BE_REAL_ESTATE_PRO>tasklist | findstr node
-node.exe                     27036 Console                    6     80,484 K
+POST /auth/login – User login
 
-C:\Users\tangu\OneDrive\Desktop\BE_REAL_ESTATE_PRO>taskkill /F /PID 27036
-SUCCESS: The process with PID 27036 has been terminated.
+GET /auth/me – Get current user info
+
+👤 Users
+GET /users/ – Get all users (admin only)
+
+GET /users/:id – Get single user
+
+PUT /users/:id – Update user
+
+🏢 Projects / Posts
+GET /posts – List all posts/projects
+
+POST /posts – Create new post
+
+PUT /posts/:id – Update post
+
+DELETE /posts/:id – Delete post
+
+Full API docs available soon via Swagger/OpenAPI.
+
+✅ Technologies
+Node.js
+
+Express.js
+
+MongoDB + Mongoose
+
+JWT Authentication
+
+Joi Validation
+
+Nodemailer
+
+Dotenv
+
+Helmet, Morgan, CORS, Rate-Limiter
+
+📮 Contact
+📧 Email: dungtadev@gmail.com
+🔗 GitHub: tiendunglaptrinh
+
+📌 License
+# This project is licensed under the MIT License.
