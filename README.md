@@ -18,6 +18,7 @@
 
 ## 📁 Folder Structure
 
+```
 BE_REAL_ESTATE_PRO/
 │
 ├── config/ # DB connection, environment configs
@@ -30,6 +31,7 @@ BE_REAL_ESTATE_PRO/
 ├── .env # Environment variables
 ├── app.js # Entry point
 └── README.md # Project documentation
+```
 
 ---
 
@@ -41,15 +43,9 @@ git clone https://github.com/tiendunglaptrinh/BE_REAL_ESTATE_PRO.git
 cd BE_REAL_ESTATE_PRO
 Install dependencies
 
-bash
-Copy
-Edit
 npm install
 Create .env file
 
-env
-Copy
-Edit
 PORT=5000
 MONGO_URI=mongodb+srv://your_mongo_uri
 JWT_SECRET=your_jwt_secret
@@ -57,9 +53,6 @@ SEND_EMAIL=your_email@example.com
 SEND_EMAIL_PASS=your_email_password
 Run the app
 
-bash
-Copy
-Edit
 # Development mode
 npm run dev
 

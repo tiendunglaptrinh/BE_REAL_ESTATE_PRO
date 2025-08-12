@@ -1,14 +1,11 @@
 import Account from "./../models/AccountModel.js";
 import { HashPassword } from "../utils/hash.js";
-import {
-  decodeToken,
-  generateAccessToken,
-  generateRefreshToken,
-  getTokenFromHeader,
-} from "./jwtService.js";
+import JWTService from "./jwtService.js";
 import { CompareHash } from "../utils/hash.js";
 import "dotenv";
 import rateLimitStore from "../utils/rateLimitStore.js";
+import jwt from "jsonwebtoken";
+import axios from 'axios';
 
 class AccountService {
   createAccount = async (userData, response) => {
@@ -70,7 +67,37 @@ class AccountService {
     }
   };
   loginService = async (accountLogin, response) => {
-    const { info_user, password } = accountLogin;
+    const { info_user, password, token_captcha } = accountLogin;
+    console.log(token_captcha);
+    // logic gửi lên google
+    if (token_captcha) {
+      const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+      const verifyUrl = "https://www.google.com/recaptcha/api/siteverify";
+
+      try {
+        const verifyResponse = await axios.post(verifyUrl, null, {
+          params: {
+            secret: secretKey,
+            response: token_captcha,
+          },
+        });
+
+        if (!verifyResponse.data.success) {
+          return {
+            success: false,
+            message: "Captcha verification failed, please try again.",
+            captcha_required: true,
+          };
+        }
+      } catch (err) {
+        // lỗi mạng hoặc Google không phản hồi
+        return {
+          success: false,
+          message: "Error verifying captcha, please try later.",
+          captcha_required: true,
+        };
+      }
+    }
     const now = Date.now();
 
     // Test state of user in system
@@ -80,6 +107,9 @@ class AccountService {
       return response.status(429).json({
         success: false,
         message: `Tài khoản tạm thời bị khóa. Vui lòng thử lại sau ${wait} giây.`,
+        captcha_required: true,
+        captcha_expire: loginState.captcha_expire,
+        wait_seconds: wait,
       });
     }
 
@@ -91,27 +121,29 @@ class AccountService {
     if (userAccount) {
       const isMatch = await CompareHash(password, userAccount.password);
       if (isMatch) {
+        const userRole = userAccount.is_admin ? "admin" : "user";
         // Login successfully
         await rateLimitStore.clear(info_user);
-        const access_token = await generateAccessToken({
+        const access_token = await JWTService.generateAccessToken({
           userId: userAccount._id,
-          userRole: userAccount.isAdmin,
+          userRole,
         });
-        const refresh_token = await generateRefreshToken({
+        const refresh_token = await JWTService.generateRefreshToken({
           userId: userAccount._id,
-          userRole: userAccount.isAdmin,
+          userRole,
         });
 
         return response.status(200).json({
           success: true,
-          message: "Đăng nhập thành công !!!",
+          message: "Đăng nhập thành công !",
           access_token,
           refresh_token,
         });
       } else {
         await rateLimitStore.recordFailedAttempt(info_user);
         const updated = await rateLimitStore.get(info_user);
-        const remaining = rateLimitStore.MAX_ATTEMPTS - (updated.failed_attempts || 0);
+        const remaining =
+          rateLimitStore.MAX_ATTEMPTS - (updated.failed_attempts || 0);
         const captcha = updated.captcha_required || false;
         return response.status(422).json({
           success: false,
@@ -120,13 +152,15 @@ class AccountService {
               ? `Mật khẩu không đúng. Còn ${remaining} lần thử.`
               : "Tài khoản bị khóa 30 giây vì nhập sai quá nhiều.",
           captcha_required: captcha,
+          wait_seconds: remaining > 0 ? null : 30,
         });
       }
     } else {
       await rateLimitStore.recordFailedAttempt(info_user);
       return response.status(422).json({
         success: false,
-        message: "Tài khoản không tồn tại trong hệ thống !!!",
+        message:
+          "Thông tin tài khoản chưa chính xác! Vui lòng kiểm tra lại thông tin",
       });
     }
   };
@@ -152,7 +186,7 @@ class AccountService {
         data: user,
       });
     } catch (error) {
-      console.error("Lỗi trong service updateInfo:", error.message); // Debug lỗi
+      console.error("Lỗi trong service updateInfo:", error.message);
       return response.status(400).json({
         success: false,
         message: error.message,
@@ -161,7 +195,7 @@ class AccountService {
   };
   getInfoUser = async (requestAnimationFrame, res) => {
     try {
-      decodeToken = decodeToken(getTokenfromHeader(req));
+      decodeToken = JWTService.decodeToken(getTokenfromHeader(req));
       if (!decodeToken) {
         return res.status(402).json({
           success: false,

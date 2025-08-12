@@ -3,7 +3,7 @@ import validator from "validator";
 import AccountService from "../services/accountService.js";
 import OCRService from "../services/ocrService.js";
 import OTPEmailService from "../services/otpEmailService.js";
-import { decodeToken, getTokenFromHeader } from "../services/jwtService.js";
+import JWTService from "../services/jwtService.js";
 import { HashPassword } from "../utils/hash.js";
 class AccountController {
   //[POST] - Create an account - register
@@ -266,44 +266,42 @@ class AccountController {
     if (!password || !confirm_password) {
       res.status(422).json({
         success: false,
-        message: "vui lòng nhập đủ các trường thông tin !"
-      })
+        message: "vui lòng nhập đủ các trường thông tin !",
+      });
     }
 
-    const accountData = req.session.accountData
+    const accountData = req.session.accountData;
     if (!accountData) {
-        return res.status(422).json({
-          success: false,
-          message: "Vui lòng nhập các thông tin cơ bản trước đó !!!",
-        });
-      }
+      return res.status(422).json({
+        success: false,
+        message: "Vui lòng nhập các thông tin cơ bản trước đó !!!",
+      });
+    }
 
     if (accountData.step_register == 1) {
-        return res.status(422).json({
-          success: false,
-          message: "Chưa xác thực OTP !!!",
-        });
-      }
-
-
+      return res.status(422).json({
+        success: false,
+        message: "Chưa xác thực OTP !!!",
+      });
+    }
 
     // Thêm logic bắt buộc phải có chữ thường, chữ số, ký tự đặc biệt, độ dài ít nhất 8 ký tự.
     if (password.length < 9) {
       res.status(500).json({
         success: false,
-        message: "Mật khẩu phải có ít nhất 9 ký tự !"
-      })
+        message: "Mật khẩu phải có ít nhất 9 ký tự !",
+      });
     }
 
     // Dùng regex để phát hiện có chữ thường, chữ số và ký tự đặc biệt
     // TODO
 
     // Check password = confirm_password
-    if (password != confirm_password){
+    if (password != confirm_password) {
       res.status(500).json({
         success: false,
-        message: "Nhập lại mật khẩu chưa khớp !"
-      })
+        message: "Nhập lại mật khẩu chưa khớp !",
+      });
     }
 
     accountData.password = password;
@@ -314,7 +312,7 @@ class AccountController {
 
   login = async (req, res, next) => {
     try {
-      const { info_user, password } = req.body;
+      const { info_user, password, token_captcha } = req.body;
 
       if (!info_user || !password) {
         return res.status(422).json({
@@ -324,7 +322,7 @@ class AccountController {
       }
 
       // Call: Login Service
-      const accountLogin = { info_user, password };
+      const accountLogin = { info_user, password, token_captcha };
       return await AccountService.loginService(accountLogin, res);
     } catch (error) {
       return res.status(500).json({
@@ -332,6 +330,18 @@ class AccountController {
         error: error.message,
       });
       next(error);
+    }
+  };
+
+  getCurrentUser = async (req, res) => {
+    try {
+      res.status(200).json({
+        success: true,
+        message: "Authenticated successfully",
+        user: req.user,
+      });
+    } catch (err) {
+      throw err.message;
     }
   };
 

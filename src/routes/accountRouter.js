@@ -1,6 +1,6 @@
 import express from "express";
 import AccountController from "../controllers/AccountController.js";
-import { authMiddleware } from "../middleware/AuthMiddleware.js";
+import { userAuthMiddleware, authMiddleware } from "../middleware/AuthMiddleware.js";
 
 const accountRouter = express.Router();
 
@@ -10,7 +10,10 @@ accountRouter.post("/create/step3", AccountController.createAccountStep3);
 accountRouter.post("/create/step4", AccountController.createAccountStep4);
 accountRouter.post("/login", AccountController.login);
 
-accountRouter.get("/get-info/:id", authMiddleware, AccountController.getInfoUser);
-accountRouter.put("/update/:id", authMiddleware, AccountController.updateInfo);
+accountRouter.get("/get-info/:id", userAuthMiddleware, AccountController.getInfoUser);
+accountRouter.put("/update/:id", userAuthMiddleware, AccountController.updateInfo);
+
+// api return currentUser for authenticate by session cookie
+accountRouter.get('/me', authMiddleware, AccountController.getCurrentUser);
 
 export default accountRouter;

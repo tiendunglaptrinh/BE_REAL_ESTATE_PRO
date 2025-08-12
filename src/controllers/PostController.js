@@ -1,40 +1,66 @@
 import Post from "../models/PostModel.js";
-import { getTokenFromHeader, decodeToken } from "../services/jwtService.js";
+import JWTService from "../services/jwtService.js";
 import PostService from "../services/postService.js";
 
 class PostController {
-  getAllPost = async (req, res, next) => {
+  getPosts = async (req, res, next) => {
     try {
-      const posts = await Post.find({});
-      res.status(200).json({
+      const {
+        needs, province, type, ward, min_price, max_price, min_acreage, max_acreage } = req.query;
+
+      const result = await PostService.getPostByFilter(req.query);
+
+      // return { posts, total, page, total_page };
+      return res.status(200).json({
         success: true,
-        count: posts.length,
-        data: posts,
+        message: "Lấy bài đăng thành công!",
+        total_pages: result.total_page,
+        current_index_page: result.page,
+        count_post_in_page: result.posts.length,
+        data_posts: result.posts,
       });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: "Lỗi khi lấy dữ liệu bài đăng",
+        message: "Lỗi khi lấy dữ liệu bài đăng!",
         error: error.message,
       });
     }
   };
+
+  getPostBySearch = async (req, res, next) => {
+    const { searchInfo } = req.params["search-info"];
+    const searchRegex = new RegExp(searchInfo, "i");
+    const posts = await Post.find({
+      $or: [
+        { title: { $regex: searchRegex } },
+        { address: { $regex: searchRegex } },
+      ],
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Search bài đăng thành công !",
+      count_posts: posts.length,
+      data: posts,
+    });
+  };
   getpost = async (req, res) => {
     try {
       const postId = req.params.id;
-      const post = await Post.find({_id: postId});
+      const post = await Post.find({ _id: postId });
 
       if (!post) {
         return res.status(400).json({
           success: false,
-          message: "Không tìm thấy bài đăng!!!"
-        })
-      }
-      else return res.status(200).json({
-        success: true,
-        message: "Lấy bài đăng thành công",
-        data: post
-      })
+          message: "Không tìm thấy bài đăng!!!",
+        });
+      } else
+        return res.status(200).json({
+          success: true,
+          message: "Lấy bài đăng thành công",
+          data: post,
+        });
     } catch (error) {
       res.status(500).json({
         success: false,
@@ -44,66 +70,25 @@ class PostController {
     }
   };
   createPostStep1 = (req, res) => {
-    const token = getTokenFromHeader(req);
+    const token = JWTService.getTokenFromCookie(req, res);
     if (!token) {
-      return res.status.json({
+      return res.status(401).json({
         success: false,
         message: "Unauthorization !!!",
       });
     }
-    const userId = decodeToken(token);
+    const userId = JWTService.decodeToken(token);
     console.log(">>> check decode token: ", userId);
-    const {
-      needs,
-      province,
-      district,
-      address,
-      type,
-      acreage,
-      price,
-      unitPrice,
-      interior,
-      title,
-      description,
-      nRoom,
-      nBathroom,
-    } = req.body;
+    const { needs, province, district, address, type, acreage, price, unitPrice, interior, title, description, nRoom, nBathroom, } = req.body;
     try {
-      if (
-        !needs ||
-        !province ||
-        !district ||
-        !address ||
-        !type ||
-        !acreage ||
-        !price ||
-        !unitPrice ||
-        !title ||
-        !description
-      ) {
+      if ( !needs || !province || !district || !address || !type || !acreage || !price || !unitPrice || !title || !description ) {
         return res.status(400).json({
           success: false,
           message: "Nhập đầy đủ các trường thông tin post !!!",
         });
       }
       const step = 1;
-      const post = {
-        needs,
-        address,
-        province,
-        district,
-        type,
-        acreage,
-        price,
-        unitPrice,
-        interior,
-        title,
-        description,
-        nRoom,
-        nBathroom,
-        userId,
-        step,
-      };
+      const post = { needs, address, province, district, type, acreage, price, unitPrice, interior, title, description, nRoom, nBathroom, userId, step, };
       console.log(">>> check post data: ", post);
       if (!req.session) {
         req.session = {};
@@ -186,6 +171,14 @@ class PostController {
         message: error.message,
       });
     }
+  };
+
+  getPostFilterProvince = async (req, res) => {
+    const province = req.params.province;
+  };
+
+  getPostFilterWard = async (req, res) => {
+    const ward = req.params.ward;
   };
 }
 

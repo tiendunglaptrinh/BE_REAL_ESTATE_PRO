@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import "dotenv/config";
 import session from "express-session";
 import cors from "cors";
+import cookieParser from 'cookie-parser';
 
 // Import internal
 import { db } from "./config/db.js";
@@ -15,7 +16,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:4000",
+    origin: "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
@@ -43,6 +44,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // Connection database
 db.connectDB();
+
+// app.use(cookieParser());
 
 // route
 route(app);
