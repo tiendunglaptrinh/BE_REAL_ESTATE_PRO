@@ -335,6 +335,7 @@ class AccountController {
 
   getCurrentUser = async (req, res) => {
     try {
+      const {userId} = req.user;
       res.status(200).json({
         success: true,
         message: "Authenticated successfully",

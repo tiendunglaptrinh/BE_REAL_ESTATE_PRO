@@ -127,10 +127,14 @@ class AccountService {
         const access_token = await JWTService.generateAccessToken({
           userId: userAccount._id,
           userRole,
+          userAvatar: userAccount.avatar,
+          userSex: userAccount.sex
         });
         const refresh_token = await JWTService.generateRefreshToken({
           userId: userAccount._id,
           userRole,
+          userAvatar: userAccount.avatar,
+          userSex: userAccount.sex
         });
 
         return response.status(200).json({

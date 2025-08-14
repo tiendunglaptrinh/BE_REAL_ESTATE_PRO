@@ -21,7 +21,7 @@ const Account = mongoose.Schema(
       enum: ["normal", "banned", "warnned"],
       default: "normal",
     },
-    avatar: { type: String, default: "None" },
+    avatar: { type: String, default: "default"},
     authen: { type: Number, required: true, default: 1 }, // 1 = đã otp | stmp     2 = ocr
     favors_post: [
       {
