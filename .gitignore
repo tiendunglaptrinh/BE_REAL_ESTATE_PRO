@@ -5,5 +5,7 @@ node_modules/
 
 import_package.js
 import_real_estate_category.js
+import_facilities.js
+import_properties.js
 
 drafs/
