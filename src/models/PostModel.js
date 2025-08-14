@@ -15,9 +15,28 @@ const PostSchema = new mongoose.Schema(
     price: { type: Number, required: true },
     unit_price: { type: String, required: true },
     discount: { type: Number, default: 0 },
-    interior: { type: String },
-    num_room: { type: Number, default: 0 },
-    num_bathroom: { type: Number, default: 0 },
+    // Thành phần bất động sản
+    property_components: [
+      {
+        component_id: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "PropertyComponent",
+          required: true,
+        },
+        quantity: { type: Number, default: 1 },
+      },
+    ],
+
+    // Tiện ích (facilities)
+    facilities: [
+      {
+        facility_id: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Facility",
+          required: true,
+        },
+      },
+    ],
     title: { type: String, required: true },
     description: { type: String, required: true },
     images: { type: [String], required: true },
@@ -47,6 +66,9 @@ const PostSchema = new mongoose.Schema(
       ref: "Account",
       required: true,
     },
+
+    latitude: { type: Number, required: true, min: -90, max: 90 },
+    longitude: { type: Number, required: true, min: -180, max: 180 },
 
     // lịch sử đổi gói
     history_pricing: [

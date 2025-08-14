@@ -7,7 +7,7 @@ const PackageSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      enum: ["Kim cương", "Vàng", "Bạc", "Thường"],
+      enum: ["HomePro Kim cương", "HomePro Vàng", "HomePro Bạc", "HomePro Thường"],
     },
 
     // Mô tả chi tiết về gói (optional)

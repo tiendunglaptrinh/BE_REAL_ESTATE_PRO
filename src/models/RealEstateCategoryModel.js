@@ -5,7 +5,7 @@ const RealEstateCategorySchema = new mongoose.Schema(
     // Loại chính: Bán, Thuê, Dịch vụ
     type: {
       type: String,
-      enum: ["Bán", "Thuê", "Dịch vụ"],
+      enum: ["Bán", "Thuê", "Tiện ích ngắn hạn", "Dịch vụ"],
       required: true,
     },
 
@@ -16,25 +16,13 @@ const RealEstateCategorySchema = new mongoose.Schema(
       trim: true,
     },
 
-    // Mô tả thêm (optional)
-    description: {
-      type: String,
-      default: "",
-    },
-
-    // Thứ tự sắp xếp hiển thị
-    sort_order: {
-      type: Number,
-      default: 0,
-    },
-
     // Trạng thái hoạt động
     is_active: {
       type: Boolean,
       default: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true, collection: "real_estate_categories" }
 );
 
 export default mongoose.model("RealEstateCategory", RealEstateCategorySchema);

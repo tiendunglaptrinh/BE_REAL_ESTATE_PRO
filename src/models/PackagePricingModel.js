@@ -28,6 +28,12 @@ const PackagePricingSchema = new mongoose.Schema(
       type: Boolean, 
       default: true 
     },
+
+    // discount giá tiền cho gói
+    discount: {
+        type: Number,
+        default: 0
+    }
   },
   { timestamps: true } // Tự động tạo createdAt và updatedAt
 );
