@@ -5,7 +5,7 @@ const RealEstateCategorySchema = new mongoose.Schema(
     // Loại chính: Bán, Thuê, Dịch vụ
     type: {
       type: String,
-      enum: ["Bán", "Thuê", "Tiện ích ngắn hạn", "Dịch vụ"],
+      enum: ["sell", "rent", "short_utility", "service"],
       required: true,
     },
 

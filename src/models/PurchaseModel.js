@@ -23,7 +23,7 @@ const PurchaseSchema = new mongoose.Schema(
       required: true,
     },
 
-    // Loại giao dịch: mua mới, gia hạn hay nâng cấp
+    // Loại giao dịch
     purchase_type: {
       type: String,
       enum: ["new", "renew", "upgrade"],
@@ -72,7 +72,7 @@ const PurchaseSchema = new mongoose.Schema(
       default: null,
     },
   },
-  { timestamps: true } // Tự động tạo createdAt và updatedAt
+  { timestamps: true }
 );
 
 export default mongoose.model("Purchase", PurchaseSchema);

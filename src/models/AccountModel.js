@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const Account = mongoose.Schema(
   {
+    // thông tin cơ bản
     fullname: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     phone: { type: String, required: true, unique: true },
@@ -10,19 +11,24 @@ const Account = mongoose.Schema(
     sex: { type: String, enum: ["male", "female"] },
     province: { type: String, required: true },
     address: { type: String, required: true },
+
+    // level auth
     is_admin: { type: Boolean, default: false },
     cccd: { type: String, required: true, unique: true },
     date_cccd: { type: Date },
     location_cccd: { type: String },
-    wallet: { type: Number, required: true, default: 50000 },
+    authen: { type: Number, required: true, default: 1 }, // 1 = đã otp | stmp     2 = ocr
+
+    // trạng thái hệ thống
     active: { type: Boolean, default: false },
     status: {
       type: String,
       enum: ["normal", "banned", "warnned"],
       default: "normal",
     },
+
+    // Cá nhân
     avatar: { type: String, default: "default"},
-    authen: { type: Number, required: true, default: 1 }, // 1 = đã otp | stmp     2 = ocr
     favors_post: [
       {
         type: mongoose.Schema.ObjectId,
@@ -30,10 +36,13 @@ const Account = mongoose.Schema(
         default: [],
       },
     ],
+    wallet: { type: Number, required: true, default: 50000 },
     num_concern: {
       type: Number,
       default: 0,
     },
+
+    // auth
     access_token: { type: String },
     refresh_token: { type: String },
   },

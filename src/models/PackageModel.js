@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 const PackageSchema = new mongoose.Schema(
   {
     // Tên gói hiển thị cho người dùng
-    // enum: chỉ cho phép một trong các giá trị cố định
     name: {
       type: String,
       required: true,
@@ -15,7 +14,7 @@ const PackageSchema = new mongoose.Schema(
       type: String 
     },
 
-    // Mức độ ưu tiên của gói (càng cao càng được ưu tiên hiển thị)
+    // Ưu tiên hiển thị
     priority_level: { 
       type: Number, 
       default: 0 
@@ -28,7 +27,7 @@ const PackageSchema = new mongoose.Schema(
       default: true 
     },
   },
-  { timestamps: true } // Tự động tạo createdAt và updatedAt
+  { timestamps: true }
 );
 
 export default mongoose.model("Package", PackageSchema);
