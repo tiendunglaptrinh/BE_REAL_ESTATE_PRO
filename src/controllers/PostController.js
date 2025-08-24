@@ -70,25 +70,22 @@ class PostController {
     }
   };
   createPostStep1 = (req, res) => {
-    const token = JWTService.getTokenFromCookie(req, res);
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorization !!!",
-      });
-    }
-    const userId = JWTService.decodeToken(token);
-    console.log(">>> check decode token: ", userId);
-    const { needs, province, district, address, type, acreage, price, unitPrice, interior, title, description, nRoom, nBathroom, } = req.body;
+    const token = JWTService.getTokenFromHeader(req, res);
+    const user_id = JWTService.decodeToken(token);
+    console.log(">>> [Create post step 1]: check decode token: ", user_id);
+
+    // data receive
+    const { needs, address, province, ward, category_id, acreage, price, unit_price, property_components, facilities, title, description, latitude, longitude } = req.body;
+        
     try {
-      if ( !needs || !province || !district || !address || !type || !acreage || !price || !unitPrice || !title || !description ) {
+      if ( !needs || !address || !province || !ward || !category_id || !acreage || !price || !unit_price || !property_components || !facilities || !title || !description || !latitude || !longitude ) {
         return res.status(400).json({
           success: false,
           message: "Nhập đầy đủ các trường thông tin post !!!",
         });
       }
       const step = 1;
-      const post = { needs, address, province, district, type, acreage, price, unitPrice, interior, title, description, nRoom, nBathroom, userId, step, };
+      const post = { needs, address, province, ward, category_id, acreage, price, unit_price, property_components, facilities, title, description, latitude, longitude, user_id, step };
       console.log(">>> check post data: ", post);
       if (!req.session) {
         req.session = {};

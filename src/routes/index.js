@@ -5,6 +5,7 @@ import adminRouter from "./adminRouter.js";
 import locationRouter from "./locationRouter.js";
 import categoryRouter from "./categoryRouter.js";
 import propertyRouter from "./propertyRouter.js";
+import facilityRouter from "./facilityRouter.js";
 
 function route(app) {
   app.use("/account", accountRouter);
@@ -13,6 +14,7 @@ function route(app) {
   app.use("/location", locationRouter);
   app.use("/category", categoryRouter);
   app.use("/property", propertyRouter);
+  app.use("/facility", facilityRouter);
   app.use("/", siteRouter);
 };
 

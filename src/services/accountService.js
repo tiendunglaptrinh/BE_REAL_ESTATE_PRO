@@ -5,7 +5,7 @@ import { CompareHash } from "../utils/hash.js";
 import "dotenv";
 import rateLimitStore from "../utils/rateLimitStore.js";
 import jwt from "jsonwebtoken";
-import axios from 'axios';
+import axios from "axios";
 
 class AccountService {
   createAccount = async (userData, response) => {
@@ -128,13 +128,13 @@ class AccountService {
           userId: userAccount._id,
           userRole,
           userAvatar: userAccount.avatar,
-          userSex: userAccount.sex
+          userSex: userAccount.sex,
         });
         const refresh_token = await JWTService.generateRefreshToken({
           userId: userAccount._id,
           userRole,
           userAvatar: userAccount.avatar,
-          userSex: userAccount.sex
+          userSex: userAccount.sex,
         });
 
         return response.status(200).json({
@@ -214,6 +214,19 @@ class AccountService {
         success: false,
         message: errror.message,
       });
+    }
+  };
+  // AccountService.js
+  getContact = async (user) => {
+    try {
+      const userId = user.userId;
+      console.log(">>> check user id: ", userId);
+
+      const user_in_DB = await Account.findById(userId); // gọn hơn
+      const {fullname, email, phone, _id} = user_in_DB;
+      return {id:_id, fullname, email, phone}
+    } catch (err) {
+      throw new Error(err.message);
     }
   };
 }

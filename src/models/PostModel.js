@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const PostSchema = new mongoose.Schema(
   {
-    needs: { type: String, enum: ["Bán", "Thuê"], required: true, },
+    needs: { type: String, enum: ["sell", "rent"], required: true, },
 
     // Đỉa chỉ
     address: { type: String, required: true },

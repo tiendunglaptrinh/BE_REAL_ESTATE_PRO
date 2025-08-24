@@ -17,7 +17,7 @@ const userAuthMiddleware = (req, res, next) => {
     }
 
     // userRole là biến boolean (isAdmin) => Nếu là Admin không cho vào route có authorization là  Người dùng.
-    if (user.userRole) {
+    if (user.userRole && user.userRole == "admin") {
       return res.status(403).json({
         success: false,
         message: "You do not have permission to access this resource",
@@ -41,8 +41,7 @@ const adminAuthMiddleware = (req, res, next) => {
     if (err) {
       return res.status(401).json({ message: "Token is invalid or expired" });
     }
-    // userRole là biến boolean (isAdmin) => Nếu không phải Admin
-    if (!user.userRole) {
+    if (user.userRole && user.userRole == "user") {
       return res.status(403).json({
         success: false,
         message: "You do not have permission to access this resource",
