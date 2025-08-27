@@ -26,6 +26,11 @@ const PackageSchema = new mongoose.Schema(
       type: Boolean, 
       default: true 
     },
+    
+    descriptions: {
+      type: [String], // mảng string
+      default: [],    // mặc định rỗng
+    },
   },
   { timestamps: true }
 );

@@ -35,7 +35,7 @@ const PackagePricingSchema = new mongoose.Schema(
         default: 0
     }
   },
-  { timestamps: true, collection: "package_pri" } // Tự động tạo createdAt và updatedAt
+  { timestamps: true, collection: "package_pricing" } // Tự động tạo createdAt và updatedAt
 );
 
 export default mongoose.model("PackagePricing", PackagePricingSchema);
