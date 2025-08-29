@@ -141,32 +141,49 @@ class PostController {
   };
 
   createPostStep3 = async (req, res) => {
-    const { goiTinDang, gia } = req.body;
-    try {
-      if (!goiTinDang || !gia) {
-        return res.status.json({
-          success: false,
-          message: "Vui lòng nhập đầy đủ thông tin |||",
-        });
-      }
-      const currentPost = req.session.postData;
-      if (!currentPost) {
-        return res.status(400).json({
-          success: false,
-          message: "Vui lòng nhập thông tin đầy đủ từ bước 1",
-        });
-      }
-      req.session.postData = {
-        ...currentPost,
-        goiTinDang,
-        gia,
-      };
-      return await PostService.createPost(req.session.postData, res);
-    } catch (error) {
-      return res.status.json({
+    const { package_id, package_pricing_id, purchase_type, amount_paid, start_day, end_date} = req.body;
+
+    const currentPost = req.session.postData;
+    if (!currentPost){
+      return res.status(422).json({
         success: false,
-        message: error.message,
-      });
+        message: "Vui lòng nhập thông tin ở bước 2 !!!"
+      })
+    }
+
+    console.log("Data in current step: ", currentPost);
+
+    if (!package_id || !package_pricing_id || !purchase_type || !amount_paid || !start_day || !end_date) {
+      return res.status(422).json({
+        success: false,
+        message: "Vui lòng nhập đầy đủ các trường thông tin !!!"
+      })
+
+      const response = await PostService.createPost(currentPost);
+
+      // Thanh toán thất bại
+      if (response.success){
+        return res.status(200).json({
+          success: true,
+          message: response.message
+        })
+      }
+      // Thanh toán thành công
+      else{
+        return res.status(500).json({
+          success: false,
+          message: response.message
+        })
+      }
+    }
+    try {
+
+    }
+    catch(err) {
+      return res.status(500).json({
+        success: false,
+        message: err.message
+      })
     }
   };
 

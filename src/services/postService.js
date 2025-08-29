@@ -62,49 +62,17 @@ class PostService {
     return { posts, total, page, total_page };
   };
 
-  createPost = async (postData, response) => {
-    try {
-      console.log(">>> check finished data create: ", postData);
-      const post = new Post({
-        needs: postData.needs,
-        province: postData.province,
-        province: postData.province,
-        district: postData.district,
-        address: postData.address,
-        type: postData.type,
-        acreage: postData.acreage,
-        price: postData.price,
-        unitPrice: postData.unitPrice,
-        interior: postData.interior,
-        title: postData.title,
-        description: postData.description,
-        nRoom: postData.nRoom,
-        nBathroom: postData.nBathroom,
-        userId: postData.userId,
-        images: postData.images,
-        video: postData.video,
-        goiTinDang: postData.goiTinDang,
-        gia: postData.gia,
-      });
+  createPost = async (postData) => {
+    console.log("[Post Service] - check data input: ", postData);
+    try{
 
-      console.log("Information of account: ", post);
+      // kiểm tra không đủ tiền - tạo post(pending) - tạo purchase(new, pending)
+      return {success: false, message: "Số dư tài khoản không đủ. Vui lòng nạp thêm tiền hoặc chọn phương thức thanh toán khác !!!"}
 
-      await post.save();
-
-      if (!response.headersSent) {
-        return response.status(200).json({
-          success: true,
-          message: "Tạo bài đăng thành công",
-          data: post,
-        });
-      }
-    } catch (error) {
-      console.error("Error creating account: ", error);
-      return response.status(500).json({
-        success: false,
-        message: "Không thể tạo bài đăng",
-        error: error.message || error,
-      });
+      // kiểm tra thành công - tạo post(display) - tạo purchase(new, paid) - trừ tiền nếu là thanh toán "personal"
+    }
+    catch (err){
+      return {success: false, message: "Hệ thống đang bị lỗi. Vui lòng thử lại sau !!!"}
     }
   };
 }

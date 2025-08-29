@@ -6,7 +6,7 @@ const PackageSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      enum: ["HomePro Kim cương", "HomePro Vàng", "HomePro Bạc", "HomePro Thường"],
+      enum: ["Started", "Standard", "Premium"],
     },
 
     // Mô tả chi tiết về gói (optional)
@@ -31,6 +31,7 @@ const PackageSchema = new mongoose.Schema(
       type: [String], // mảng string
       default: [],    // mặc định rỗng
     },
+     subscripts: { type: [String], required: true },
   },
   { timestamps: true }
 );

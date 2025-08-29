@@ -27,6 +27,7 @@ const PurchaseSchema = new mongoose.Schema(
     purchase_type: {
       type: String,
       enum: ["new", "renew", "upgrade"],
+      required: true,
       default: "new",
     },
 
@@ -69,7 +70,7 @@ const PurchaseSchema = new mongoose.Schema(
     // Mã giao dịch từ cổng thanh toán (Momo, VNPay, Stripe,...)
     transaction_id: { 
       type: String,
-      default: null,
+      default: "personal",
     },
   },
   { timestamps: true }

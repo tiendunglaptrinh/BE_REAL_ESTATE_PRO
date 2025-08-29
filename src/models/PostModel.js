@@ -57,6 +57,14 @@ const PostSchema = new mongoose.Schema(
     // Thời điểm hết hạn
     time_expire: { type: Date, required: true },
 
+    // Trạng thái bài đăng
+    status: {
+      type: String,
+      enum: ["display", "hidden", "delete", "pending","ban"],
+      required: true,
+      default: "pending"
+    },
+
     // Trạng thái giao dịch
     is_traded: { type: Boolean, default: false },
 
