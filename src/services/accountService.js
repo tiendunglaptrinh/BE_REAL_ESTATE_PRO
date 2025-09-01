@@ -221,14 +221,27 @@ class AccountService {
     try {
       const userId = user.userId;
       console.log(">>> check user id: ", userId);
-
-      const user_in_DB = await Account.findById(userId); // gọn hơn
+      const user_in_DB = await Account.findById(userId);
       const {fullname, email, phone, _id} = user_in_DB;
       return {id:_id, fullname, email, phone}
     } catch (err) {
       throw new Error(err.message);
     }
   };
+  
+  getMoneyWallet = async (user) => {
+    try{
+      const userId = user.userId;
+      console.log(">>> check user id: ", userId);
+      
+      const user_in_DB = await Account.findById(userId);
+      console.log(">>> check user: ", user_in_DB);
+      return user_in_DB.wallet;
+    }
+    catch (err){
+      return -1;
+    }
+  }
 }
 
 export default new AccountService();

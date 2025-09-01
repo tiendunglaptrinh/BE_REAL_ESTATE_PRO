@@ -16,5 +16,6 @@ accountRouter.put("/update/:id", userAuthMiddleware, AccountController.updateInf
 // api return currentUser for authenticate by session cookie
 accountRouter.get('/me', authMiddleware, AccountController.getCurrentUser);
 accountRouter.get('/contact', authMiddleware, AccountController.getConTact);
+accountRouter.get('/wallet', authMiddleware, AccountController.getMoneyWallet);
 
 export default accountRouter;

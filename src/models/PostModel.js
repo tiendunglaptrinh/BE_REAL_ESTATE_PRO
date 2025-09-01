@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const PostSchema = new mongoose.Schema(
   {
-    needs: { type: String, enum: ["sell", "rent"], required: true, },
+    needs: { type: String, enum: ["sell", "rent"], required: true },
 
     // Đỉa chỉ
     address: { type: String, required: true },
@@ -16,7 +16,11 @@ const PostSchema = new mongoose.Schema(
     discount: { type: Number, default: 0 },
 
     // Loại hình
-    category_id: { type: mongoose.Schema.Types.ObjectId, ref: 'RealEstateCategory', required: true },
+    category_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "RealEstateCategory",
+      required: true,
+    },
 
     // Thành phần bất động sản
     property_components: [
@@ -32,14 +36,11 @@ const PostSchema = new mongoose.Schema(
 
     // Tiện ích (facilities)
     facilities: [
-      {
-        facility_id: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Facility",
-          required: true,
-        },
-      },
-    ],
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Facility",
+    }
+  ],
 
     // Mô tả
     title: { type: String, required: true },
@@ -60,9 +61,9 @@ const PostSchema = new mongoose.Schema(
     // Trạng thái bài đăng
     status: {
       type: String,
-      enum: ["display", "hidden", "delete", "pending","ban"],
+      enum: ["draft", "pending", "published", "hidden", "deleted", "blocked"],
       required: true,
-      default: "pending"
+      default: "draf",
     },
 
     // Trạng thái giao dịch

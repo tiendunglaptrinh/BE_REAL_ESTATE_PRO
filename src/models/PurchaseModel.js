@@ -9,6 +9,12 @@ const PurchaseSchema = new mongoose.Schema(
       required: true,
     },
 
+    purchase_code: {
+      type: String,
+      required: true,
+      unique: true
+    },
+
     // Bài đăng được áp dụng gói này
     post_id: {
       type: mongoose.Schema.Types.ObjectId,
@@ -27,7 +33,7 @@ const PurchaseSchema = new mongoose.Schema(
     purchase_type: {
       type: String,
       enum: ["new", "renew", "upgrade"],
-      required: true,
+      required: true, 
       default: "new",
     },
 

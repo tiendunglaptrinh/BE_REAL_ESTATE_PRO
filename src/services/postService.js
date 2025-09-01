@@ -15,13 +15,17 @@ class PostService {
     if (queryReq.ward) query_param.ward = queryReq.ward;
     if (queryReq.min_price || queryReq.max_price) {
       query_param.price = {};
-      if (queryReq.min_price) query_param.price.$gte = Number(queryReq.min_price);
-      if (queryReq.max_price) query_param.price.$lte = Number(queryReq.max_price);
+      if (queryReq.min_price)
+        query_param.price.$gte = Number(queryReq.min_price);
+      if (queryReq.max_price)
+        query_param.price.$lte = Number(queryReq.max_price);
     }
     if (queryReq.min_acreage || queryReq.max_acreage) {
       query_param.acreage = {};
-      if (queryReq.min_acreage) query_param.acreage.$gte = Number(queryReq.min_acreage);
-      if (queryReq.max_acreage) query_param.acreage.$lte = Number(queryReq.max_acreage);
+      if (queryReq.min_acreage)
+        query_param.acreage.$gte = Number(queryReq.min_acreage);
+      if (queryReq.max_acreage)
+        query_param.acreage.$lte = Number(queryReq.max_acreage);
     }
 
     // pagination
@@ -64,15 +68,47 @@ class PostService {
 
   createPost = async (postData) => {
     console.log("[Post Service] - check data input: ", postData);
-    try{
+    try {
+      // destructure nếu muốn validate hoặc log
+      const {
+        needs,
+        address,
+        province,
+        ward,
+        acreage,
+        price,
+        unit_price,
+        discount,
+        category_id,
+        property_components,
+        facilities,
+        title,
+        description,
+        images,
+        video,
+        current_package,
+        time_expire,
+        status,
+        user_id,
+        latitude,
+        longitude,
+      } = postData;
 
-      // kiểm tra không đủ tiền - tạo post(pending) - tạo purchase(new, pending)
-      return {success: false, message: "Số dư tài khoản không đủ. Vui lòng nạp thêm tiền hoặc chọn phương thức thanh toán khác !!!"}
+      // tạo post
+      const post = await Post.create(postData);
 
-      // kiểm tra thành công - tạo post(display) - tạo purchase(new, paid) - trừ tiền nếu là thanh toán "personal"
-    }
-    catch (err){
-      return {success: false, message: "Hệ thống đang bị lỗi. Vui lòng thử lại sau !!!"}
+      // trả về object chuẩn
+      return {
+        success: true,
+        message: "Tạo bài đăng draf thành công",
+        data: post,
+      };
+    } catch (err) {
+      console.error("[Post Service] - createPost error:", err);
+      return {
+        success: false,
+        message: "Hệ thống đang bị lỗi. Vui lòng thử lại sau !!!",
+      };
     }
   };
 }

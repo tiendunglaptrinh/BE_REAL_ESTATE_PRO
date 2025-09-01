@@ -6,7 +6,15 @@ class PostController {
   getPosts = async (req, res, next) => {
     try {
       const {
-        needs, province, type, ward, min_price, max_price, min_acreage, max_acreage } = req.query;
+        needs,
+        province,
+        type,
+        ward,
+        min_price,
+        max_price,
+        min_acreage,
+        max_acreage,
+      } = req.query;
 
       const result = await PostService.getPostByFilter(req.query);
 
@@ -45,6 +53,7 @@ class PostController {
       data: posts,
     });
   };
+  
   getpost = async (req, res) => {
     try {
       const postId = req.params.id;
@@ -75,17 +84,64 @@ class PostController {
     console.log(">>> [Create post step 1]: check decode token: ", user_id);
 
     // data receive
-    const { needs, address, province, ward, category_id, acreage, price, unit_price, property_components, facilities, title, description, latitude, longitude } = req.body;
-        
+    const {
+      needs,
+      address,
+      province,
+      ward,
+      category_id,
+      acreage,
+      price,
+      unit_price,
+      property_components,
+      facilities,
+      title,
+      description,
+      latitude,
+      longitude,
+    } = req.body;
+
     try {
-      if ( !needs || !address || !province || !ward || !category_id || !acreage || !price || !unit_price || !property_components || !facilities || !title || !description || !latitude || !longitude ) {
+      if (
+        !needs ||
+        !address ||
+        !province ||
+        !ward ||
+        !category_id ||
+        !acreage ||
+        !price ||
+        !unit_price ||
+        !property_components ||
+        !facilities ||
+        !title ||
+        !description ||
+        !latitude ||
+        !longitude
+      ) {
         return res.status(400).json({
           success: false,
           message: "Nhập đầy đủ các trường thông tin post !!!",
         });
       }
       const step = 1;
-      const post = { needs, address, province, ward, category_id, acreage, price, unit_price, property_components, facilities, title, description, latitude, longitude, user_id, step };
+      const post = {
+        needs,
+        address,
+        province,
+        ward,
+        category_id,
+        acreage: Number(acreage),
+        price: Number(price),
+        unit_price,
+        property_components,
+        facilities,
+        title,
+        description,
+        latitude: Number(latitude),
+        longitude: Number(longitude),
+        user_id,
+        step,
+      };
       console.log(">>> check post data: ", post);
       if (!req.session) {
         req.session = {};
@@ -140,50 +196,53 @@ class PostController {
     }
   };
 
+  // tạo post draf lưu tiến trình
   createPostStep3 = async (req, res) => {
-    const { package_id, package_pricing_id, purchase_type, amount_paid, start_day, end_date} = req.body;
+    const { current_package, time_expire, status } = req.body;
+    try {
+      const currentPost = req.session.postData;
+      if (!currentPost) {
+        return res.status(422).json({
+          success: false,
+          message: "Vui lòng nhập thông tin ở bước 2 !!!",
+        });
+      }
 
-    const currentPost = req.session.postData;
-    if (!currentPost){
-      return res.status(422).json({
-        success: false,
-        message: "Vui lòng nhập thông tin ở bước 2 !!!"
-      })
-    }
+      console.log("Data in current step: ", currentPost);
 
-    console.log("Data in current step: ", currentPost);
+      if (!current_package || !time_expire || !status) {
+        return res.status(422).json({
+          success: false,
+          message: "Vui lòng nhập đủ thông tin !!!",
+        });
+      }
 
-    if (!package_id || !package_pricing_id || !purchase_type || !amount_paid || !start_day || !end_date) {
-      return res.status(422).json({
-        success: false,
-        message: "Vui lòng nhập đầy đủ các trường thông tin !!!"
-      })
-
+      // Chưa truyền thông tin bước 3.
+      currentPost.current_package = current_package;
+      currentPost.time_expire = time_expire;
+      currentPost.status = status;
       const response = await PostService.createPost(currentPost);
 
       // Thanh toán thất bại
-      if (response.success){
+      if (response.success) {
         return res.status(200).json({
           success: true,
-          message: response.message
-        })
+          data: response.message,
+        });
       }
       // Thanh toán thành công
-      else{
+      else {
         return res.status(500).json({
           success: false,
-          message: response.message
-        })
+          message: response.message,
+          data: response.data,
+        });
       }
-    }
-    try {
-
-    }
-    catch(err) {
+    } catch (err) {
       return res.status(500).json({
         success: false,
-        message: err.message
-      })
+        message: err.message,
+      });
     }
   };
 

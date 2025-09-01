@@ -408,6 +408,32 @@ class AccountController {
       });
     }
   };
+
+  getMoneyWallet = async (req, res) => {
+    try{ 
+      const {user} = req;
+      const money = await AccountService.getMoneyWallet(user);
+
+      if (money < 0) {
+        return res.status(422).json({
+          success: false,
+          message: "Không thể lấy số dư ví"
+        })
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy số dư ví thành công",
+        money
+      })
+    }
+    catch (err) {
+      return res.status(500).json({
+        success: false,
+        message: err.message
+      })
+    }
+  }
 }
 
 const calculateAge = (date) => {
