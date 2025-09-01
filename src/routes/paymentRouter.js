@@ -5,6 +5,8 @@ import { adminAuthMiddleware, userAuthMiddleware, authMiddleware } from "../midd
 const paymentRouter = express.Router();
 
 paymentRouter.post("/create-order/:amount", userAuthMiddleware,  PaymentController.createOrder);
+paymentRouter.post("/payment-wallet/new", userAuthMiddleware,  PaymentController.paymentNewPostByWallet);
+
 // paymentRouter.get("/capture-order", userAuthMiddleware,  PaymentController.captureOrder);
 // paymentRouter.get("/get-status-order",userAuthMiddleware,  PaymentController.getOrderStatus);
 

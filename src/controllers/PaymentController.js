@@ -1,4 +1,7 @@
 import paypal from "@paypal/checkout-server-sdk";
+import generatePurchaseCode from "../utils/generatePurchaseCode.js";
+import PaymentService from "../services/paymentService.js";
+import PackageService from "../services/packageService.js";
 
 class PaymentController {
   createOrder = async (req, res) => {
@@ -14,7 +17,10 @@ class PaymentController {
       // Config Sandbox
       const clientId = process.env.PAYPAL_CLIENT_ID;
       const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
-      const environment = new paypal.core.SandboxEnvironment(clientId, clientSecret);
+      const environment = new paypal.core.SandboxEnvironment(
+        clientId,
+        clientSecret
+      );
       const client = new paypal.core.PayPalHttpClient(environment);
 
       // Tạo request order
@@ -25,10 +31,9 @@ class PaymentController {
         purchase_units: [
           {
             amount: {
-                currency_code: "USD", // thay VND -> USD
-                value: (Number(amount) / 24000).toFixed(2), // giả sử tỉ giá ~ 24k VND = 1 USD
+              currency_code: "USD", // thay VND -> USD
+              value: (Number(amount) / 24000).toFixed(2), // giả sử tỉ giá ~ 24k VND = 1 USD
             },
-
           },
         ],
       });
@@ -46,6 +51,70 @@ class PaymentController {
       return res.status(500).json({
         success: false,
         message: "Tạo order PayPal thất bại",
+      });
+    }
+  };
+
+  paymentNewPostByWallet = async (req, res) => {
+    try {
+      const { post_id, money, start_date, package_pricing_id } = req.body;
+      const { userId } = req.user;
+
+      if (!post_id || !money || !start_date || !package_pricing_id) {
+        return res.status(422).json({
+          success: false,
+          message: "Chưa đầy đủ các trường thông tin",
+        });
+      }
+
+      const response_data = await PackageService.getPackagePricingById(
+        package_pricing_id
+      );
+      if (!response_data.success) {
+        return res.status(422).json({
+          success: false,
+          message: response_data.message,
+        });
+      }
+
+      const duration = response_data.data.duration_days;
+      console.log("[PaymentController]: check duration: ", duration);
+
+      const start = new Date(start_date);
+      let end_date = new Date(start);
+      end_date.setDate(end_date.getDate() + duration);
+      console.log("[PaymentController]: check end_date: ", end_date);
+
+      const dataPurchase = {
+        user_id: userId,
+        post_id: post_id,
+        purchase_code: generatePurchaseCode(),
+        package_pricing_id: package_pricing_id,
+        amount_paid: money,
+        start_date: start,
+        end_date,
+      };
+
+      const response = await PaymentService.paymentNewPostByWallet(
+        dataPurchase
+      );
+
+      if (response.success) {
+        return res.status(200).json({
+          success: true,
+          message: response.message,
+          data: response.data,
+        });
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: response.message,
+        });
+      }
+    } catch (err) {
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi hệ thống",
       });
     }
   };
