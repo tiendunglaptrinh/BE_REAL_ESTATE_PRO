@@ -8,6 +8,7 @@ import propertyRouter from "./propertyRouter.js";
 import facilityRouter from "./facilityRouter.js";
 import packageRouter from "./packageRouter.js";
 import paymentRouter from "./paymentRouter.js";
+import messageRouter from "./messageRouter.js";
 
 function route(app) {
   app.use("/account", accountRouter);
@@ -19,7 +20,9 @@ function route(app) {
   app.use("/facility", facilityRouter);
   app.use("/package", packageRouter);
   app.use("/payment", paymentRouter);
+  app.use("/message", messageRouter);
   app.use("/", siteRouter);
+  
 };
 
 export default route;
