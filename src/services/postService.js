@@ -97,11 +97,12 @@ class PostService {
       // tạo post
       const post = await Post.create(postData);
 
+      const data = post._id.toString();
       // trả về object chuẩn
       return {
         success: true,
         message: "Tạo bài đăng draf thành công",
-        data: post,
+        data,
       };
     } catch (err) {
       console.error("[Post Service] - createPost error:", err);

@@ -223,19 +223,19 @@ class PostController {
       currentPost.status = status;
       const response = await PostService.createPost(currentPost);
 
-      // Thanh toán thất bại
+      // Thanh toán thành công
       if (response.success) {
         return res.status(200).json({
           success: true,
-          data: response.message,
+          message: response.message,
+          data: response.data,
         });
       }
-      // Thanh toán thành công
-      else {
+      // Thanh toán thất bại
+      else { 
         return res.status(500).json({
           success: false,
           message: response.message,
-          data: response.data,
         });
       }
     } catch (err) {
