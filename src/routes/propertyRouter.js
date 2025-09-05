@@ -5,6 +5,8 @@ import { userAuthMiddleware } from "../middleware/AuthMiddleware.js";
 const propertyRouter = express.Router();
 
 propertyRouter.get("/all", PropertyController.getAllProperty);
+propertyRouter.post("/get-list", PropertyController.getListPropertyById);
+
 propertyRouter.post( "/add", userAuthMiddleware, PropertyController.addCategory );
 
 export default propertyRouter;

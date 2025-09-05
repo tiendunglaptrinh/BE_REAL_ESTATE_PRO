@@ -1,6 +1,9 @@
 import Post from "../models/PostModel.js";
 import JWTService from "../services/jwtService.js";
 import PostService from "../services/postService.js";
+import Property from "../models/PropertyModel.js";
+import Facility from "../models/FacilityModel.js";
+import Account from "../models/AccountModel.js";
 
 class PostController {
   getPosts = async (req, res, next) => {
@@ -53,23 +56,49 @@ class PostController {
       data: posts,
     });
   };
-  
-  getpost = async (req, res) => {
+
+  getPostByIdPost = async (req, res) => {
     try {
       const postId = req.params.id;
-      const post = await Post.find({ _id: postId });
+      const post = await Post.findById(postId).lean();
+
+      const user = await Account.findById(post.user_id);
+      const user_content = {
+        fullname: user.fullname,
+        email: user.email,
+        phone: user.phone
+      }
+
+      post.user_content = user_content;
 
       if (!post) {
         return res.status(400).json({
           success: false,
           message: "Không tìm thấy bài đăng!!!",
         });
-      } else
-        return res.status(200).json({
-          success: true,
-          message: "Lấy bài đăng thành công",
-          data: post,
-        });
+      }
+
+      const facilityIds = post.facilities.map(item => item);
+      const componentIds = post.property_components.map(item => item.component_id);
+
+      const facilities = await Facility.find({ _id: { $in: facilityIds } }).lean();
+      const properties = await Property.find({ _id: { $in: componentIds } }).lean();
+
+      const propertyMap = {};
+      properties.forEach(p => {
+        propertyMap[p._id.toString()] = p.icon;
+      });
+
+      post.property_components = post.property_components.map(item => ({
+        ...item,
+        icon: propertyMap[item.component_id] || null
+      }));
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy bài đăng thành công",
+        data: post,
+      });
     } catch (error) {
       res.status(500).json({
         success: false,
@@ -78,6 +107,8 @@ class PostController {
       });
     }
   };
+
+
   createPostStep1 = (req, res) => {
     const token = JWTService.getTokenFromHeader(req, res);
     const user_id = JWTService.decodeToken(token);
@@ -232,7 +263,7 @@ class PostController {
         });
       }
       // Thanh toán thất bại
-      else { 
+      else {
         return res.status(500).json({
           success: false,
           message: response.message,

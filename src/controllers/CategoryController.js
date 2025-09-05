@@ -12,6 +12,7 @@ class CategoryController {
       return res.status(500).json({ success: false, message: err.message });
     }
   };
+  
   getSellCategory = async (req, res) => {
     try {
       const sell_category = await RealEstateCategory.find({ type: "sell" });

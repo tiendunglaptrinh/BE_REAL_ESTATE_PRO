@@ -36,11 +36,13 @@ const PostSchema = new mongoose.Schema(
 
     // Tiện ích (facilities)
     facilities: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Facility",
-    }
-  ],
+      {
+        facility_id: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Facility",
+        }
+      }
+    ],
 
     // Mô tả
     title: { type: String, required: true },

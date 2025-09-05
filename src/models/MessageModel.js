@@ -21,15 +21,19 @@ const MessageSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    metadata: [
-      {
-        type: {
-          type: String, // "link", "image", "file"
-          default: "link",
+    metadata: {
+      type: [
+        {
+          type: {
+            type: String,
+            enum: ["link", "image", "file"],
+            default: "link",
+          },
+          value: String,
         },
-        value: String,
-      },
-    ],
+      ],
+      default: [],
+    },
   },
   { timestamps: true }
 );

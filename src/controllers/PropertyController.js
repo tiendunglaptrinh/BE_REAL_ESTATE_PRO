@@ -26,6 +26,24 @@ class PropertyController {
       });
     }
   };
+
+  getListPropertyById = async (req, res) => {
+    const { listId } = req.body;
+    console.log("listId: ", listId);
+    try {
+      const listProperty = await Property.find({ _id: { $in: listId } }).lean();
+      return res.status(200).json({
+        success: true,
+        data: listProperty
+      });
+    } catch (err) {
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi hệ thống"
+      });
+    }
+  };
+
 }
 
 export default new PropertyController();

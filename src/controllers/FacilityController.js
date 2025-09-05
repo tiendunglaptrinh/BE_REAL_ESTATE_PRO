@@ -26,6 +26,25 @@ class FacilityController {
       });
     }
   };
+
+  getFacilityByListId = async (req, res) =>{
+    const {listId} = req.body;
+    try {
+      const listFacility = await Facility.find({ _id: { $in: listId } }).lean();
+
+      return res.status(200).json({
+        success: true,
+        message:"Lấy danh sách tiện ích thành công",
+        data: listFacility
+      });
+    }
+    catch(err) {
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi hệ thống"
+      })
+    }
+  }
 }
 
 export default new FacilityController();

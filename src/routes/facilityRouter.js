@@ -5,6 +5,7 @@ import { userAuthMiddleware } from "../middleware/AuthMiddleware.js";
 const facilityRouter = express.Router();
 
 facilityRouter.get("/all", FacilityController.getAllFacility);
+facilityRouter.post("/get-list", FacilityController.getFacilityByListId);
 // facilityRouter.post( "/add", userAuthMiddleware, FacilityController.addCategory );
 
 export default facilityRouter;
