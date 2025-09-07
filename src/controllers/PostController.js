@@ -66,7 +66,8 @@ class PostController {
       const user_content = {
         fullname: user.fullname,
         email: user.email,
-        phone: user.phone
+        phone: user.phone,
+        avatar: user.avatar
       }
 
       post.user_content = user_content;

@@ -37,10 +37,8 @@ const PostSchema = new mongoose.Schema(
     // Tiện ích (facilities)
     facilities: [
       {
-        facility_id: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Facility",
-        }
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Facility",
       }
     ],
 
