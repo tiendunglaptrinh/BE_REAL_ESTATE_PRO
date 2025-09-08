@@ -9,10 +9,15 @@ const PostSchema = new mongoose.Schema(
     province: { type: String, required: true },
     ward: { type: String, required: true },
 
+    address_slug: { type: String, required:true},
+    province_slug: { type: String, required:true},
+    ward_slug: { type: String, required:true},
+
     // thông số cơ bản
     acreage: { type: Number, required: true },
     price: { type: Number, required: true },
     unit_price: { type: String, required: true },
+    price_vnd: {type: Number, required: true},
     discount: { type: Number, default: 0 },
 
     // Loại hình
@@ -44,6 +49,7 @@ const PostSchema = new mongoose.Schema(
 
     // Mô tả
     title: { type: String, required: true },
+    title_slug: { type: String, required: true },
     description: { type: String, required: true },
     images: { type: [String], required: true },
     video: { type: String },
@@ -99,6 +105,13 @@ const PostSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Post model
+PostSchema.index({ needs: 1, province: 1, ward: 1 });
+PostSchema.index({ price: 1 });
+PostSchema.index({ acreage: 1 });
+PostSchema.index({ createdAt: -1 });
+PostSchema.index({ current_package: 1 });
 
 const PostModel = mongoose.model("Post", PostSchema);
 export default PostModel;

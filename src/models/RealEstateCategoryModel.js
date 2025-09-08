@@ -21,6 +21,12 @@ const RealEstateCategorySchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    category_slug: {
+      type: String,
+      required: true,
+      index: true
+    },
   },
   { timestamps: true, collection: "real_estate_categories" }
 );

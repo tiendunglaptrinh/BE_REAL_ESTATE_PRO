@@ -3,96 +3,111 @@ import Post from "../models/PostModel.js";
 import { HashPassword } from "../utils/hash.js";
 import JWTService from "./jwtService.js";
 import { CompareHash } from "../utils/hash.js";
+import slugify from "../utils/slugify.js";
 
 class PostService {
   getPostByFilter = async (queryReq) => {
-    const query_param = {};
+  const query_param = {};
 
-    // check query param
-    if (queryReq.needs) query_param.needs = queryReq.needs;
-    if (queryReq.type) query_param.type = queryReq.type;
-    if (queryReq.province) query_param.province = queryReq.province;
-    if (queryReq.ward) query_param.ward = queryReq.ward;
-    if (queryReq.min_price || queryReq.max_price) {
-      query_param.price = {};
-      if (queryReq.min_price)
-        query_param.price.$gte = Number(queryReq.min_price);
-      if (queryReq.max_price)
-        query_param.price.$lte = Number(queryReq.max_price);
-    }
-    if (queryReq.min_acreage || queryReq.max_acreage) {
-      query_param.acreage = {};
-      if (queryReq.min_acreage)
-        query_param.acreage.$gte = Number(queryReq.min_acreage);
-      if (queryReq.max_acreage)
-        query_param.acreage.$lte = Number(queryReq.max_acreage);
-    }
+  // lọc cơ bản trừ category
+  if (queryReq.needs) query_param.needs = queryReq.needs;
+  if (queryReq.province) query_param.province_slug = queryReq.province;
+  if (queryReq.ward) {
+    query_param.ward = {
+      $in: Array.isArray(queryReq.ward) ? queryReq.ward_slug : [queryReq.ward]
+    };
+  }
 
-    // pagination
-    const total = await Post.countDocuments(query_param);
-    const limit = Number(queryReq.limit) || 12;
-    const page = Number(queryReq.page) || 1;
-    const total_page = Math.ceil(total / limit);
+  if (queryReq.min_price || queryReq.max_price) {
+    query_param.price_vnd = {};
+    if (queryReq.min_price) query_param.price_vnd.$gte = Number(queryReq.min_price);
+    if (queryReq.max_price) query_param.price_vnd.$lte = Number(queryReq.max_price);
+  }
 
-    // validate param: page
-    if (page > total_page) page = total_page;
-    if (page < 1) page = 1;
+  if (queryReq.min_acreage || queryReq.max_acreage) {
+    query_param.acreage = {};
+    if (queryReq.min_acreage) query_param.acreage.$gte = Number(queryReq.min_acreage);
+    if (queryReq.max_acreage) query_param.acreage.$lte = Number(queryReq.max_acreage);
+  }
 
-    const skip = (page - 1) * limit;
+  // pagination
+  const total = await Post.countDocuments(query_param);
+  const limit = Number(queryReq.limit) || 12;
+  const page = Number(queryReq.page) || 1;
+  const total_page = Math.ceil(total / limit);
+  const safePage = Math.min(Math.max(page, 1), total_page || 1);
+  const skip = (safePage - 1) * limit;
 
-    // filter post
-    const posts = await Post.aggregate([
-      { $match: query_param },
-      {
-        $addFields: {
-          sortOrder: {
-            $switch: {
-              branches: [
-                { case: { $eq: ["$post_packet", "KC"] }, then: 1 },
-                { case: { $eq: ["$post_packet", "V"] }, then: 2 },
-                { case: { $eq: ["$post_packet", "B"] }, then: 3 },
-                { case: { $eq: ["$post_packet", "T"] }, then: 4 },
-              ],
-              default: 5,
+  // pipeline
+  const pipeline = [
+    { $match: query_param },
+
+    // lookup Package
+    {
+      $lookup: {
+        from: "packages",
+        localField: "current_package",
+        foreignField: "_id",
+        as: "package_info",
+      },
+    },
+    { $unwind: { path: "$package_info", preserveNullAndEmptyArrays: true } },
+
+    // lookup real_estate_categories nếu có filter category
+    ...(queryReq.category
+      ? [
+          {
+            $lookup: {
+              from: "real_estate_categories",
+              localField: "category_id",
+              foreignField: "_id",
+              as: "category_info",
             },
           },
-        },
-      },
-      { $sort: { sortOrder: 1 } },
-      { $skip: skip },
-      { $limit: limit },
-    ]);
+          { $unwind: { path: "$category_info", preserveNullAndEmptyArrays: true } },
+          { $match: { "category_info.category_slug": queryReq.category } },
+        ]
+      : []),
 
-    return { posts, total, page, total_page };
-  };
+    // addFields
+    {
+      $addFields: {
+        priority_level: { $ifNull: ["$package_info.priority_level", 999] },
+        package_name: "$package_info.name",
+      },
+    },
+
+    // sort + pagination
+    { $sort: { priority_level: -1, createdAt: -1 } },
+    { $skip: skip },
+    { $limit: limit },
+  ];
+
+  const posts = await Post.aggregate(pipeline);
+
+  return { posts, total, page: safePage, total_page };
+};
+
+
 
   createPost = async (postData) => {
     console.log("[Post Service] - check data input: ", postData);
     try {
       // destructure nếu muốn validate hoặc log
-      const {
-        needs,
-        address,
-        province,
-        ward,
-        acreage,
-        price,
-        unit_price,
-        discount,
-        category_id,
-        property_components,
-        facilities,
-        title,
-        description,
-        images,
-        video,
-        current_package,
-        time_expire,
-        status,
-        user_id,
-        latitude,
-        longitude,
-      } = postData;
+      postData.address_slug = slugify(postData.address);
+      postData.province_slug = slugify(postData.province);
+      postData.ward_slug = slugify(postData.ward);
+      postData.title_slug = slugify(postData.title);
+
+      const num = Number(postData.price);
+      const unitPrice = postData.unit_price;
+      let price_vnd;
+
+      if (unitPrice.toLowerCase().includes("million")) price_vnd = num * 1000000;
+      else if (unitPrice.toLowerCase().includes("billion")) price_vnd = num * 1000000000;
+      else price_vnd = num;
+
+      postData.price_vnd = price_vnd;
 
       // tạo post
       const post = await Post.create(postData);

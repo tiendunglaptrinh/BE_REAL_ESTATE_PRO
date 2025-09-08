@@ -36,4 +36,7 @@ const PackageSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Package model
+PackageSchema.index({ priority_level: 1 });
+
 export default mongoose.model("Package", PackageSchema);

@@ -61,6 +61,28 @@ class PackageController{
             })
         }
     }
+
+    getPackageById = async (req, res) =>{
+        try {
+            const {id} = req.params;
+            console.log("id: ", id)
+            const pkg = await Package.findById(id);
+
+            return res.status(200).json({
+                success: true,
+                message: "Lấy bài đăng thành công",
+                data: pkg
+            })
+        }
+
+        catch (err){
+            console.log("error: ", err);
+            return res.status(500).json({
+                success: false,
+                message: "Lỗi hệ thống"
+            })
+        }
+    }
 }
 
 export default new PackageController();

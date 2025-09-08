@@ -5,6 +5,7 @@ import { adminAuthMiddleware, userAuthMiddleware, authMiddleware } from "../midd
 const packageRouter = express.Router();
 
 packageRouter.get("/all", PackageController.getAllPackage);
+packageRouter.get("/get/:id", PackageController.getPackageById);
 packageRouter.get("/get-package-pricing", PackageController.getAllPackagePricing);
 packageRouter.get("/get/:priority", PackageController.getPackagePricing);
 

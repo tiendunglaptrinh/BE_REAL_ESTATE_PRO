@@ -4,24 +4,26 @@ import PostService from "../services/postService.js";
 import Property from "../models/PropertyModel.js";
 import Facility from "../models/FacilityModel.js";
 import Account from "../models/AccountModel.js";
+import Package from "../models/PackageModel.js";
 
 class PostController {
   getPosts = async (req, res, next) => {
     try {
-      const {
-        needs,
-        province,
-        type,
-        ward,
-        min_price,
-        max_price,
-        min_acreage,
-        max_acreage,
-      } = req.query;
+      // const {
+      //   needs,
+      //   province,
+      //   type,
+      //   ward,
+      //   min_price,
+      //   max_price,
+      //   min_acreage,
+      //   max_acreage,
+      // } = req.query;
 
       const result = await PostService.getPostByFilter(req.query);
 
       // return { posts, total, page, total_page };
+      // const pkg = await Package.findById(result.post)
       return res.status(200).json({
         success: true,
         message: "Lấy bài đăng thành công!",
