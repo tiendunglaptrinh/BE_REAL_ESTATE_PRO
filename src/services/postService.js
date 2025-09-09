@@ -7,86 +7,89 @@ import slugify from "../utils/slugify.js";
 
 class PostService {
   getPostByFilter = async (queryReq) => {
-  const query_param = {};
+    console.log("[Post Service] - getPostByFilter with query: ", queryReq);
+    const query_param = {};
 
-  // lọc cơ bản trừ category
-  if (queryReq.needs) query_param.needs = queryReq.needs;
-  if (queryReq.province) query_param.province_slug = queryReq.province;
-  if (queryReq.ward) {
-    query_param.ward = {
-      $in: Array.isArray(queryReq.ward) ? queryReq.ward_slug : [queryReq.ward]
-    };
-  }
+    // lọc cơ bản trừ category
+    if (queryReq.needs) query_param.needs = queryReq.needs;
+    if (queryReq.province) query_param.province_slug = queryReq.province;
+    if (queryReq.ward) {
+  // Luôn filter theo ward_slug, và luôn là mảng, dùng $in để filter
+  query_param.ward_slug = { $in: Array.isArray(queryReq.ward) ? queryReq.ward : [queryReq.ward] };
+}
 
-  if (queryReq.min_price || queryReq.max_price) {
-    query_param.price_vnd = {};
-    if (queryReq.min_price) query_param.price_vnd.$gte = Number(queryReq.min_price);
-    if (queryReq.max_price) query_param.price_vnd.$lte = Number(queryReq.max_price);
-  }
+    if (queryReq.min_price || queryReq.max_price) {
+      query_param.price_vnd = {};
+      if (queryReq.min_price) query_param.price_vnd.$gte = Number(queryReq.min_price);
+      if (queryReq.max_price) query_param.price_vnd.$lte = Number(queryReq.max_price);
+    }
 
-  if (queryReq.min_acreage || queryReq.max_acreage) {
-    query_param.acreage = {};
-    if (queryReq.min_acreage) query_param.acreage.$gte = Number(queryReq.min_acreage);
-    if (queryReq.max_acreage) query_param.acreage.$lte = Number(queryReq.max_acreage);
-  }
+    if (queryReq.min_acreage || queryReq.max_acreage) {
+      query_param.acreage = {};
+      if (queryReq.min_acreage) query_param.acreage.$gte = Number(queryReq.min_acreage);
+      if (queryReq.max_acreage) query_param.acreage.$lte = Number(queryReq.max_acreage);
+    }
 
-  // pagination
-  const total = await Post.countDocuments(query_param);
-  const limit = Number(queryReq.limit) || 12;
-  const page = Number(queryReq.page) || 1;
-  const total_page = Math.ceil(total / limit);
-  const safePage = Math.min(Math.max(page, 1), total_page || 1);
-  const skip = (safePage - 1) * limit;
+    // pagination
+    const total = await Post.countDocuments(query_param);
+    const limit = Number(queryReq.limit) || 12;
+    const page = Number(queryReq.page) || 1;
+    const total_page = Math.ceil(total / limit);
+    const safePage = Math.min(Math.max(page, 1), total_page || 1);
+    const skip = (safePage - 1) * limit;
 
-  // pipeline
-  const pipeline = [
-    { $match: query_param },
+    // pipeline
+    const pipeline = [
+      { $match: query_param },
 
-    // lookup Package
-    {
-      $lookup: {
-        from: "packages",
-        localField: "current_package",
-        foreignField: "_id",
-        as: "package_info",
+      // lookup Package
+      {
+        $lookup: {
+          from: "packages",
+          localField: "current_package",
+          foreignField: "_id",
+          as: "package_info",
+        },
       },
-    },
-    { $unwind: { path: "$package_info", preserveNullAndEmptyArrays: true } },
+      { $unwind: { path: "$package_info", preserveNullAndEmptyArrays: true } },
 
-    // lookup real_estate_categories nếu có filter category
-    ...(queryReq.category
-      ? [
-          {
-            $lookup: {
-              from: "real_estate_categories",
-              localField: "category_id",
-              foreignField: "_id",
-              as: "category_info",
-            },
-          },
-          { $unwind: { path: "$category_info", preserveNullAndEmptyArrays: true } },
-          { $match: { "category_info.category_slug": queryReq.category } },
+      // luôn luôn lookup real_estate_categories
+      {
+        $lookup: {
+          from: "real_estate_categories",
+          localField: "category_id",
+          foreignField: "_id",
+          as: "category_info",
+        },
+      },
+      { $unwind: { path: "$category_info", preserveNullAndEmptyArrays: true } },
+
+      // nếu có filter category thì match tiếp
+      ...(queryReq.category && Array.isArray(queryReq.category) && queryReq.category.length > 0
+        ? [
+          { $match: { "category_info.category_slug": { $in: queryReq.category } } },
         ]
-      : []),
+        : []),
 
-    // addFields
-    {
-      $addFields: {
-        priority_level: { $ifNull: ["$package_info.priority_level", 999] },
-        package_name: "$package_info.name",
+      // addFields
+      {
+        $addFields: {
+          priority_level: { $ifNull: ["$package_info.priority_level", 999] },
+          package_name: "$package_info.name",
+          category_slug: "$category_info.category_slug",
+        },
       },
-    },
 
-    // sort + pagination
-    { $sort: { priority_level: -1, createdAt: -1 } },
-    { $skip: skip },
-    { $limit: limit },
-  ];
+      // sort + pagination
+      { $sort: { priority_level: -1, createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit },
+    ];
 
-  const posts = await Post.aggregate(pipeline);
+    const posts = await Post.aggregate(pipeline);
 
-  return { posts, total, page: safePage, total_page };
-};
+    return { posts, total, page: safePage, total_page };
+  };
 
 
 
