@@ -378,7 +378,24 @@ class AccountController {
     }
   };
   getInfoUser = async (req, res) => {
-    return await AccountService.getInfoUser(req, res);
+    const {userId} = req.user;
+    console.log("current user: ", userId);
+
+    try{
+      const account = await Account.findById(userId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Lấy thông tin người dùng thành công",
+      data: account
+    })
+    }
+    catch (err){
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi hệ thống"
+      })
+    }
   };
 
   // AccountController.js

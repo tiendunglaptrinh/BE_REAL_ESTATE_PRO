@@ -28,7 +28,7 @@ const Account = mongoose.Schema(
     },
 
     // Cá nhân
-    avatar: { type: String, default: "default"},
+    avatar: { type: String, default: "default" },
     favors_post: [
       {
         type: mongoose.Schema.ObjectId,
@@ -37,10 +37,19 @@ const Account = mongoose.Schema(
       },
     ],
     wallet: { type: Number, required: true, default: 50000 },
-    num_concern: {
+    total_like_post: {
       type: Number,
       default: 0,
     },
+    total_view_post: {
+      type: Number,
+      default: 0
+    },
+    total_view_profile: {
+      type: Number,
+      default: 0
+    },
+
 
     // auth
     access_token: { type: String },

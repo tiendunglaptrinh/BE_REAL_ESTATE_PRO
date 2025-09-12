@@ -11,7 +11,7 @@ class LocationController {
     try {
       const enrichedLocations = locations.map((loc) => ({
         ...loc,
-        priority: (loc.name === "Hà Nội" || loc.name === "Hồ Chí Minh") ? 2 : 1,
+        priority: (loc.name === "Hà Nội" || loc.name === "Hồ Chí Minh" || loc.name === "Đà Nẵng") ? 2 : 1,
       }));
 
       return res.status(200).json({

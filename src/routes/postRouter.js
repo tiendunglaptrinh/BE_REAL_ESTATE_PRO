@@ -14,5 +14,7 @@ postRouter.post('/create/step1',userAuthMiddleware, PostController.createPostSte
 postRouter.post('/create/step2',userAuthMiddleware, PostController.createPostStep2);
 postRouter.post('/create/step3',userAuthMiddleware, PostController.createPostStep3);
 
+postRouter.get('/get-user-post',userAuthMiddleware, PostController.getPostOfUser);
+
 
 export default postRouter;

@@ -9,15 +9,15 @@ const PostSchema = new mongoose.Schema(
     province: { type: String, required: true },
     ward: { type: String, required: true },
 
-    address_slug: { type: String, required:true},
-    province_slug: { type: String, required:true},
-    ward_slug: { type: String, required:true},
+    address_slug: { type: String, required: true },
+    province_slug: { type: String, required: true },
+    ward_slug: { type: String, required: true },
 
     // thông số cơ bản
     acreage: { type: Number, required: true },
     price: { type: Number, required: true },
     unit_price: { type: String, required: true },
-    price_vnd: {type: Number, required: true},
+    price_vnd: { type: Number, required: true },
     discount: { type: Number, default: 0 },
 
     // Loại hình
@@ -102,6 +102,12 @@ const PostSchema = new mongoose.Schema(
         purchased_at: { type: Date, default: Date.now },
       },
     ],
+    message_contact: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "MessageContact",
+      default: []
+    }
+
   },
   { timestamps: true }
 );

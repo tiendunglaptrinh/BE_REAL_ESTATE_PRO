@@ -5,21 +5,11 @@ import Property from "../models/PropertyModel.js";
 import Facility from "../models/FacilityModel.js";
 import Account from "../models/AccountModel.js";
 import Package from "../models/PackageModel.js";
+import mongoose from "mongoose";
 
 class PostController {
   getPosts = async (req, res, next) => {
     try {
-      // const {
-      //   needs,
-      //   province,
-      //   type,
-      //   ward,
-      //   min_price,
-      //   max_price,
-      //   min_acreage,
-      //   max_acreage,
-      // } = req.query;
-
       const result = await PostService.getPostByFilter(req.query);
 
       // return { posts, total, page, total_page };
@@ -287,6 +277,28 @@ class PostController {
   getPostFilterWard = async (req, res) => {
     const ward = req.params.ward;
   };
+
+  getPostOfUser = async (req, res) => {
+    try {
+      const { userId } = req.user;
+      console.log("userId: ", userId)
+      const listPost = await Post.find({ user_id: new mongoose.Types.ObjectId(userId) });
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy bài đăng thành công",
+        count: listPost.length,
+        data: listPost
+      });
+    }
+    catch (err) {
+      console.log("err: ", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi hệ thống"
+      })
+    }
+  }
 }
 
 export default new PostController();
