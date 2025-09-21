@@ -6,6 +6,7 @@ const locationRouter = express.Router();
 
 locationRouter.get("/all", LocationController.getLocation);
 locationRouter.get("/province", LocationController.getProvince);
+locationRouter.post("/list-ward", LocationController.getListWardByProvinceSlug);
 locationRouter.get("/province/:provinceCode/ward", LocationController.getWardFromProvince);
 
 locationRouter.get("/geocode/:address",authMiddleware ,LocationController.geoCoding);

@@ -14,9 +14,9 @@ class PostService {
     if (queryReq.needs) query_param.needs = queryReq.needs;
     if (queryReq.province) query_param.province_slug = queryReq.province;
     if (queryReq.ward) {
-  // Luôn filter theo ward_slug, và luôn là mảng, dùng $in để filter
-  query_param.ward_slug = { $in: Array.isArray(queryReq.ward) ? queryReq.ward : [queryReq.ward] };
-}
+      // Luôn filter theo ward_slug, và luôn là mảng, dùng $in để filter
+      query_param.ward_slug = { $in: Array.isArray(queryReq.ward) ? queryReq.ward : [queryReq.ward] };
+    }
 
     if (queryReq.min_price || queryReq.max_price) {
       query_param.price_vnd = {};
@@ -119,7 +119,7 @@ class PostService {
       // trả về object chuẩn
       return {
         success: true,
-        message: "Tạo bài đăng draf thành công",
+        message: "Tạo bài đăng draft thành công",
         data,
       };
     } catch (err) {

@@ -69,7 +69,7 @@ const PostSchema = new mongoose.Schema(
       type: String,
       enum: ["draft", "pending", "published", "hidden", "deleted", "blocked"],
       required: true,
-      default: "draf",
+      default: "draft",
     },
 
     // Trạng thái giao dịch

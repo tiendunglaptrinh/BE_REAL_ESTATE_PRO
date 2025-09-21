@@ -10,6 +10,7 @@ class AccountController {
   // Step 1:
   // HTTP response 422(Unprocessable Entity) & 409 (Conflict).
   createAccountStep1 = async (req, res, next) => {
+    console.log("body step 1: ", req.body);
     try {
       const {
         fullname,
@@ -199,6 +200,23 @@ class AccountController {
     try {
       console.log("Session Data in step 3: ", req.session.accountData);
       const { forward_cccd, backward_cccd } = req.body;
+      const accountData = req.session.accountData;
+
+      if (!accountData) {
+        return res.status(422).json({
+          success: false,
+          message: "Chưa nhập các thông tin cơ bản ở bước 1 !!!",
+        });
+      }
+      if (!forward_cccd && !backward_cccd) {
+        accountData.authen = 1;
+        return res.status(200).json({
+          success: true,
+          message: "Bạn đã bỏ qua bước xác thực căn cước công dân",
+          current_data: accountData,
+          nex_step: 4,
+        });
+      }
 
       if (!forward_cccd) {
         return res.status(422).json({
@@ -213,14 +231,7 @@ class AccountController {
         });
       }
 
-      const accountData = req.session.accountData;
 
-      if (!accountData) {
-        return res.status(422).json({
-          success: false,
-          message: "Chưa nhập các thông tin cơ bản ở bước 1 !!!",
-        });
-      }
 
       if (accountData.step_register == 1) {
         return res.status(422).json({
@@ -238,7 +249,7 @@ class AccountController {
 
       if (ocr_result) {
         accountData.authen = 2;
-        res.status(200).json({
+        return res.status(200).json({
           success: true,
           message: "Xác thực OCR thành công !!!",
           current_data: accountData,
@@ -261,53 +272,74 @@ class AccountController {
   };
 
   createAccountStep4 = async (req, res, next) => {
-    const { password, confirm_password } = req.body;
+    try {
+      const { password, confirm_password } = req.body;
 
-    if (!password || !confirm_password) {
-      res.status(422).json({
-        success: false,
-        message: "vui lòng nhập đủ các trường thông tin !",
-      });
+      if (!password || !confirm_password) {
+        res.status(422).json({
+          success: false,
+          message: "vui lòng nhập đủ các trường thông tin !",
+        });
+      }
+
+      const accountData = req.session.accountData;
+      if (!accountData) {
+        return res.status(422).json({
+          success: false,
+          message: "Vui lòng nhập các thông tin cơ bản trước đó !!!",
+        });
+      }
+
+      if (accountData.step_register == 1) {
+        return res.status(422).json({
+          success: false,
+          message: "Chưa xác thực OTP !!!",
+        });
+      }
+
+      // Thêm logic bắt buộc phải có chữ thường, chữ số, ký tự đặc biệt, độ dài ít nhất 8 ký tự.
+      if (password.length < 9) {
+        res.status(500).json({
+          success: false,
+          message: "Mật khẩu phải có ít nhất 9 ký tự !",
+        });
+      }
+
+      // Dùng regex để phát hiện có chữ thường, chữ số và ký tự đặc biệt
+      // TODO
+
+      // Check password = confirm_password
+      if (password != confirm_password) {
+        res.status(500).json({
+          success: false,
+          message: "Nhập lại mật khẩu chưa khớp !",
+        });
+      }
+
+      accountData.password = password;
+      console.log(">>> check password in account: ", accountData.password);
+
+      const response = await AccountService.createAccount(accountData, res);
+
+      if (response.success) {
+        return res.status(200).json({
+          success: true,
+          message: response.message
+        })
+      }
+      else {
+        return res.status(409).json({
+          success: false,
+          message: response.message
+        })
+      }
     }
-
-    const accountData = req.session.accountData;
-    if (!accountData) {
-      return res.status(422).json({
+    catch (err) {
+      return res.status(500).json({
         success: false,
-        message: "Vui lòng nhập các thông tin cơ bản trước đó !!!",
-      });
+        message: "Lỗi hệ thống"
+      })
     }
-
-    if (accountData.step_register == 1) {
-      return res.status(422).json({
-        success: false,
-        message: "Chưa xác thực OTP !!!",
-      });
-    }
-
-    // Thêm logic bắt buộc phải có chữ thường, chữ số, ký tự đặc biệt, độ dài ít nhất 8 ký tự.
-    if (password.length < 9) {
-      res.status(500).json({
-        success: false,
-        message: "Mật khẩu phải có ít nhất 9 ký tự !",
-      });
-    }
-
-    // Dùng regex để phát hiện có chữ thường, chữ số và ký tự đặc biệt
-    // TODO
-
-    // Check password = confirm_password
-    if (password != confirm_password) {
-      res.status(500).json({
-        success: false,
-        message: "Nhập lại mật khẩu chưa khớp !",
-      });
-    }
-
-    accountData.password = password;
-    console.log(">>> check password in account: ", accountData.password);
-
-    return await AccountService.createAccount(accountData, res);
   };
 
   login = async (req, res, next) => {
@@ -346,51 +378,56 @@ class AccountController {
     }
   };
 
-  updateInfo = async (req, res, next) => {
+  updateInfo = async (req, res) => {
     try {
-      const { full_name, email, phone, birthday } = req.body;
-      const user_from_reqURL = req.params.id;
-      const user_from_token = req.user.userId;
-      console.log("check id user from url: ", user_from_reqURL);
-      console.log("check id user from token: ", user_from_token);
-      //  Kiểm tra userId từ token và url gửi lên
-      if (user_from_reqURL != user_from_token) {
-        return res.status(403).json({
+      const { userId } = req.user; // userId đã được lấy từ token
+      const { fullname, birthday, sex } = req.body;
+
+      const account = await Account.findByIdAndUpdate(
+        userId,
+        {
+          fullname,
+          birthday,
+          sex,
+        },
+        { new: true, runValidators: true } // new: trả về doc sau khi update, runValidators: check enum, required...
+      );
+
+      if (!account) {
+        return res.status(404).json({
           success: false,
-          message: "Unauthorization !!!",
+          message: "Không tìm thấy tài khoản",
         });
       }
-      //  Tiếp tục
-      if (!full_name || !phone || !email || !birthday) {
-        return res.status(400).json({
-          success: false,
-          message: "Vui lòng nhập thông tin chỉnh sửa đầy đủ !!!",
-        });
-      }
-      const userId = user_from_reqURL;
-      const updateData = { userId, full_name, email, phone, birthday };
-      return await AccountService.updateInfo(updateData, res);
-    } catch (error) {
+
+      return res.status(200).json({
+        success: true,
+        message: "Update thành công"
+      });
+    } catch (err) {
+      console.log(err.message);
       return res.status(500).json({
-        message: "Update user failed",
-        error: error.message,
+        success: false,
+        message: "Lỗi hệ thống",
       });
     }
   };
+
+
   getInfoUser = async (req, res) => {
-    const {userId} = req.user;
+    const { userId } = req.user;
     console.log("current user: ", userId);
 
-    try{
+    try {
       const account = await Account.findById(userId);
 
-    return res.status(200).json({
-      success: true,
-      message: "Lấy thông tin người dùng thành công",
-      data: account
-    })
+      return res.status(200).json({
+        success: true,
+        message: "Lấy thông tin người dùng thành công",
+        data: account
+      })
     }
-    catch (err){
+    catch (err) {
       return res.status(500).json({
         success: false,
         message: "Lỗi hệ thống"
@@ -427,8 +464,8 @@ class AccountController {
   };
 
   getMoneyWallet = async (req, res) => {
-    try{ 
-      const {user} = req;
+    try {
+      const { user } = req;
       const money = await AccountService.getMoneyWallet(user);
 
       if (money < 0) {

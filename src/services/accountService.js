@@ -10,11 +10,6 @@ import axios from "axios";
 class AccountService {
   createAccount = async (userData, response) => {
     try {
-      console.log(
-        ">>> userData.password:",
-        userData.password,
-        typeof userData.password
-      );
 
       const hashedPassword = await HashPassword(
         "password",
@@ -26,8 +21,6 @@ class AccountService {
         userData.cccd,
         process.env.SALT_ROUND_HASH
       );
-
-      console.log(">>> check password hash: ", userData.password);
 
       const account = new Account({
         fullname: userData.fullname,
@@ -46,24 +39,18 @@ class AccountService {
         status: "normal",
       });
 
-      console.log("Information of account: ", account);
-
       await account.save();
 
-      if (!response.headersSent) {
-        return response.status(200).json({
-          success: true,
-          message: "Đăng ký tài khoản thành công !!!",
-          data: account,
-        });
+      return {
+        success: true,
+        message: "Đăng ký tài khoản thành công !!!",
       }
     } catch (error) {
       console.error("Error creating account: ", error);
-      return response.status(500).json({
+      return {
         success: false,
-        message: "Không thể tạo tài khoản",
-        error: error.message || error,
-      });
+        message: "Không thể tạo tài khoản !"
+      };
     }
   };
   loginService = async (accountLogin, response) => {

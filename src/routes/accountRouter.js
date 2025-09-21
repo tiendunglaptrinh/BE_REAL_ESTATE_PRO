@@ -11,7 +11,7 @@ accountRouter.post("/create/step4", AccountController.createAccountStep4);
 accountRouter.post("/login", AccountController.login);
 
 accountRouter.get("/get-info", userAuthMiddleware, AccountController.getInfoUser);
-accountRouter.put("/update/:id", userAuthMiddleware, AccountController.updateInfo);
+accountRouter.patch("/update-info", userAuthMiddleware, AccountController.updateInfo);
 
 // api return currentUser for authenticate by session cookie
 accountRouter.get('/me', authMiddleware, AccountController.getCurrentUser);

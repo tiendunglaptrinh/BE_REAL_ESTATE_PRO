@@ -281,8 +281,49 @@ class PostController {
   getPostOfUser = async (req, res) => {
     try {
       const { userId } = req.user;
-      console.log("userId: ", userId)
-      const listPost = await Post.find({ user_id: new mongoose.Types.ObjectId(userId) });
+
+      const pipeline = [
+        {
+          $match: {
+            user_id: new mongoose.Types.ObjectId(userId)
+          }
+        },
+
+        // lookup Package
+        {
+          $lookup: {
+            from: "packages",
+            localField: "current_package",
+            foreignField: "_id",
+            as: "package_info",
+          },
+        },
+        { $unwind: { path: "$package_info", preserveNullAndEmptyArrays: true } },
+
+        // lookup Category
+        {
+          $lookup: {
+            from: "real_estate_categories",
+            localField: "category_id",
+            foreignField: "_id",
+            as: "category_info",
+          },
+        },
+        { $unwind: { path: "$category_info", preserveNullAndEmptyArrays: true } },
+
+        // addFields (thêm mấy field join vào)
+        {
+          $addFields: {
+            priority_level: { $ifNull: ["$package_info.priority_level", 999] },
+            package_name: "$package_info.name",
+            category_slug: "$category_info.category_slug",
+          },
+        },
+
+        { $sort: { priority_level: -1, createdAt: -1 } }
+      ];
+
+      const listPost = await Post.aggregate(pipeline);
 
       return res.status(200).json({
         success: true,
@@ -290,15 +331,16 @@ class PostController {
         count: listPost.length,
         data: listPost
       });
-    }
-    catch (err) {
+
+    } catch (err) {
       console.log("err: ", err);
       return res.status(500).json({
         success: false,
         message: "Lỗi hệ thống"
-      })
+      });
     }
   }
+
 }
 
 export default new PostController();
