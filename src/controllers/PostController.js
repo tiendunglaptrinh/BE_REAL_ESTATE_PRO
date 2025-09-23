@@ -17,6 +17,7 @@ class PostController {
       return res.status(200).json({
         success: true,
         message: "Lấy bài đăng thành công!",
+        total_result: result.total,
         total_pages: result.total_page,
         current_index_page: result.page,
         count_post_in_page: result.posts.length,

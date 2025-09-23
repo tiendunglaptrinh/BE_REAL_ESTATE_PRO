@@ -8,13 +8,13 @@ import slugify from "../utils/slugify.js";
 class PostService {
   getPostByFilter = async (queryReq) => {
     console.log("[Post Service] - getPostByFilter with query: ", queryReq);
+
     const query_param = {};
 
     // lọc cơ bản trừ category
     if (queryReq.needs) query_param.needs = queryReq.needs;
     if (queryReq.province) query_param.province_slug = queryReq.province;
     if (queryReq.ward) {
-      // Luôn filter theo ward_slug, và luôn là mảng, dùng $in để filter
       query_param.ward_slug = { $in: Array.isArray(queryReq.ward) ? queryReq.ward : [queryReq.ward] };
     }
 
@@ -31,18 +31,15 @@ class PostService {
     }
 
     // pagination
-    const total = await Post.countDocuments(query_param);
     const limit = Number(queryReq.limit) || 12;
     const page = Number(queryReq.page) || 1;
-    const total_page = Math.ceil(total / limit);
-    const safePage = Math.min(Math.max(page, 1), total_page || 1);
-    const skip = (safePage - 1) * limit;
+    const skip = (page - 1) * limit;
 
-    // pipeline
+    // pipeline với facet
     const pipeline = [
       { $match: query_param },
 
-      // lookup Package
+      // lookup package
       {
         $lookup: {
           from: "packages",
@@ -53,7 +50,7 @@ class PostService {
       },
       { $unwind: { path: "$package_info", preserveNullAndEmptyArrays: true } },
 
-      // luôn luôn lookup real_estate_categories
+      // lookup category
       {
         $lookup: {
           from: "real_estate_categories",
@@ -64,11 +61,9 @@ class PostService {
       },
       { $unwind: { path: "$category_info", preserveNullAndEmptyArrays: true } },
 
-      // nếu có filter category thì match tiếp
+      // filter theo category nếu có
       ...(queryReq.category && Array.isArray(queryReq.category) && queryReq.category.length > 0
-        ? [
-          { $match: { "category_info.category_slug": { $in: queryReq.category } } },
-        ]
+        ? [{ $match: { "category_info.category_slug": { $in: queryReq.category } } }]
         : []),
 
       // addFields
@@ -80,16 +75,32 @@ class PostService {
         },
       },
 
-      // sort + pagination
-      { $sort: { priority_level: -1, createdAt: -1 } },
-      { $skip: skip },
-      { $limit: limit },
+      {
+        $facet: {
+          metadata: [{ $count: "total" }],
+          data: [
+            { $sort: { priority_level: -1, createdAt: -1 } },
+            { $skip: skip },
+            { $limit: limit },
+          ],
+        },
+      },
+      {
+        $project: {
+          data: 1,
+          total: { $ifNull: [{ $arrayElemAt: ["$metadata.total", 0] }, 0] },
+        },
+      },
     ];
 
-    const posts = await Post.aggregate(pipeline);
+    const result = await Post.aggregate(pipeline);
+    const posts = result[0]?.data || [];
+    const total = result[0]?.total || 0;
+    const total_page = Math.ceil(total / limit);
 
-    return { posts, total, page: safePage, total_page };
+    return { posts, total, page, total_page };
   };
+
 
 
 

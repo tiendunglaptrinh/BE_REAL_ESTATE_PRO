@@ -6,4 +6,4 @@ const OTPRouter = express.Router();
 
 OTPRouter.post("/resend", OTPController.resendOTP);
 
-export default OTPRouter;
+export default OTPRouter;   
