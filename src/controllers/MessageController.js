@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Conversation from "../models/ConversationModel.js";
 import Message from "../models/MessageModel.js";
 import ChatbotService from "../services/chatbotService.js";
+import formatContext from '../utils/formatContext.js';
 
 class MessageController {
     sendMessageToChatBot = async (req, res) => {
@@ -42,7 +43,7 @@ class MessageController {
             }], { session });
 
             // Gọi bot service
-            const response_from_bot = await ChatbotService.responseMessage(user_message);
+            const response_from_bot = await ChatbotService.responseMessageWithPosts(user_message);
             let botMessageContent = response_from_bot.success
                 ? response_from_bot.message
                 : "Bot không trả lời được, vui lòng thử lại.";
@@ -60,7 +61,7 @@ class MessageController {
 
             return res.status(200).json({
                 success: true,
-                bot_response: botMessageContent
+                bot_response: formatContext(botMessageContent)
             });
         } catch (err) {
             console.error("sendMessageToChatBot error:", err);

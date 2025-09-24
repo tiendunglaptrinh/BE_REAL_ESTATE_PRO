@@ -50,10 +50,10 @@ class PostController {
     });
   };
 
-  getPostByIdPost = async (req, res) => {
+  getPostBySlugPost = async (req, res) => {
     try {
-      const postId = req.params.id;
-      const post = await Post.findById(postId).lean();
+      const postSlug = req.params.slug;
+      const post = await Post.findOne({title_slug: postSlug}).lean();
 
       const user = await Account.findById(post.user_id);
       const user_content = {

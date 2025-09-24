@@ -2,6 +2,8 @@ import Account from "../models/AccountModel.js";
 import Post from "./../models/PostModel.js";
 import Purchase from "./../models/PurchaseModel.js";
 import mongoose from "mongoose";
+import ChatbotService from "../services/chatbotService.js";
+import buildEmbeddingText from "../utils/buildEmbeddingText.js";
 
 class PaymentService {
   paymentNewPostByWallet = async (dataPurchase) => {
@@ -33,7 +35,7 @@ class PaymentService {
           {
             user_id,
             post_id,
-            purchase_code, // nên generate từ backend
+            purchase_code,
             package_pricing_id,
             payment_status: "paid",
             amount_paid,
@@ -50,7 +52,20 @@ class PaymentService {
       user_in_DB.wallet -= amount_paid;
       await user_in_DB.save({ session });
 
+      // Chuyển trạng thái post sang published
       post_in_DB.status = "published";
+
+      // // --- Tạo embedding vector ngay khi post được publish ---
+      // const embeddingText = buildEmbeddingText(post_in_DB); // Hàm buildEmbeddingText
+      // const embeddingResult = await ChatbotService.generateEmbedding(embeddingText);
+
+      // if (!embeddingResult.success) {
+      //   console.warn("Không tạo được vector embedding:", embeddingResult.message);
+      //   // vẫn commit post, không block user
+      // } else {
+      //   post_in_DB.embedding = embeddingResult.data;
+      // }
+
       await post_in_DB.save({ session });
 
       await session.commitTransaction();
@@ -70,6 +85,7 @@ class PaymentService {
       };
     }
   };
+
   paymentNewPostByPaypal = async (dataPurchase) => {
     const {
       user_id,
@@ -91,7 +107,7 @@ class PaymentService {
       const post_in_DB = await Post.findById(post_id);
       if (!post_in_DB) throw new Error("Post không tồn tại");
 
-      // Tạo purchase (không trừ tiền ví, vì đã trả qua PayPal)
+      // Tạo purchase (đã trả qua PayPal, không trừ ví)
       const purchase = await Purchase.create(
         [
           {
@@ -111,6 +127,18 @@ class PaymentService {
 
       // Cập nhật post từ draft → published
       post_in_DB.status = "published";
+
+      // // --- Tạo embedding vector ngay khi post được publish ---
+      // const embeddingText = buildEmbeddingText(post_in_DB);
+      // const embeddingResult = await ChatbotService.generateEmbedding(embeddingText);
+
+      // if (!embeddingResult.success) {
+      //   console.warn("Không tạo được vector embedding:", embeddingResult.message);
+      //   // vẫn commit post, không block user
+      // } else {
+      //   post_in_DB.embedding = embeddingResult.data;
+      // }
+
       await post_in_DB.save({ session });
 
       await session.commitTransaction();
@@ -130,8 +158,6 @@ class PaymentService {
       };
     }
   };
-
-
 }
 
 export default new PaymentService();

@@ -106,6 +106,12 @@ const PostSchema = new mongoose.Schema(
       type: [mongoose.Schema.Types.ObjectId],
       ref: "MessageContact",
       default: []
+    },
+    // vector embedding để chatbot tìm kiếm
+    embedding: {
+      type: [Number],
+      default: [],
+      select: false, // ẩn khi query bình thường, chỉ load khi cần
     }
 
   },

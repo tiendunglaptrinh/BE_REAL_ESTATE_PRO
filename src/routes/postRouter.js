@@ -5,7 +5,7 @@ import { userAuthMiddleware } from "../middleware/AuthMiddleware.js";
 const postRouter = express.Router();
 
 postRouter.get('/get-posts', PostController.getPosts);
-postRouter.get('/get-post/:id', PostController.getPostByIdPost);
+postRouter.get('/get-post/:slug', PostController.getPostBySlugPost);
 postRouter.get('/search-post/:search-info', PostController.getPostBySearch);
 postRouter.get('/get-post/:province', PostController.getPostFilterProvince);
 postRouter.get('/get-post/:ward', PostController.getPostFilterWard);
