@@ -1,6 +1,8 @@
 function formatContext(content) {
   let postUrl = null;
 
+  console.log("Raw content: ", content);
+
   // Tạm giữ url post khi parse
   content = content.replace(/url:\s*(.+)/gi, (_, p1) => {
     postUrl = p1.trim();
@@ -8,17 +10,11 @@ function formatContext(content) {
   });
 
   return content
-    // bỏ ** markdown
     .replace(/\*\*/g, "")
-    // in đậm "Bài đăng x"
     .replace(/Bài đăng\s*(\d+)/gi, (_, p1) => `<b style="color: #115ca8">Bài đăng ${p1}</b>`)
-    // tiêu đề
     .replace(/title:\s*(.+)/gi, (_, p1) => `<span style="font-weight:600">${p1}</span>`)
-    // Diện tích
     .replace(/acreage:\s*(.+)/gi, (_, p1) => `<span style="font-weight:600">Diện tích:</span> ${p1}`)
-    // Giá cả
     .replace(/price:\s*(.+)/gi, (_, p1) => `<span style="font-weight:600">Giá cả:</span> ${p1}`)
-    // Ảnh (dùng url post nếu có, fallback là chính link ảnh)
     .replace(/image:\s*(.+)/gi, (_, p1) => {
   const imageUrl = p1.trim();
   const href = postUrl || imageUrl;

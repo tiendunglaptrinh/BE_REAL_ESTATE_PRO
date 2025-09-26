@@ -8,11 +8,19 @@ const StatusSchema = new mongoose.Schema(
             required: true,
         },
         // Mảng các String chứa đường dẫn cloudinary
-        images: [String],
+        image: {
+            type: String,
+            default: ""
+        },
 
-        location: {
-            province: { type: String, required: true },
-            ward: { type: String },
+        province: {
+            type: String
+        },
+
+        // content
+        content: {
+            type: String,
+            required: true
         },
 
         // Bài viết cần được admin duyệt mới có thể đăng lên
@@ -26,6 +34,12 @@ const StatusSchema = new mongoose.Schema(
         // Đường dẫn đến bài viết (trong hệ thống)
         linked_post: {
             type: String,
+        },
+
+        // Mục đích đăng: shared = chia sẻ, find = tìm kiếm, post = đăng bài đăng, 
+        mean: {
+            type: String,
+            enum: ["shared", "find", "post"]
         },
 
         // Số like

@@ -10,6 +10,8 @@ import packageRouter from "./packageRouter.js";
 import paymentRouter from "./paymentRouter.js";
 import messageRouter from "./messageRouter.js";
 import OTPRouter from "./OTPRouter.js";
+import GoogleRouter from "./googleRouter.js";
+import StatusRouter from "./statusRouter.js";
 
 function route(app) {
   app.use("/account", accountRouter);
@@ -23,6 +25,8 @@ function route(app) {
   app.use("/payment", paymentRouter);
   app.use("/message", messageRouter);
   app.use("/otp", OTPRouter);
+  app.use("/auth", GoogleRouter);
+  app.use("/status", StatusRouter);
   app.use("/", siteRouter);
   
 };
