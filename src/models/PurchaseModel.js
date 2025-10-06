@@ -19,14 +19,14 @@ const PurchaseSchema = new mongoose.Schema(
     post_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Post",
-      required: true,
+      // required: true,
     },
 
     // Gói + thời hạn + giá đã chọn (PackagePricing)
     package_pricing_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "PackagePricing",
-      required: true,
+      // required: true,
     },
 
     // Loại giao dịch
@@ -45,7 +45,7 @@ const PurchaseSchema = new mongoose.Schema(
     },
 
     // Gói cũ trước khi nâng cấp (chỉ dùng khi purchase_type = "upgrade")
-    previous_package_pricing_id: {
+    previous_package: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "PackagePricing",
       default: null,
@@ -54,13 +54,11 @@ const PurchaseSchema = new mongoose.Schema(
     // Ngày bắt đầu áp dụng gói cho bài viết
     start_date: { 
       type: Date, 
-      required: true 
     },
 
     // Ngày kết thúc hiệu lực gói cho bài viết
     end_date: { 
       type: Date, 
-      required: true 
     },
 
     // Trạng thái thanh toán

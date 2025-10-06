@@ -487,6 +487,35 @@ class AccountController {
         message: err.message
       })
     }
+  };
+
+  getInfoProfile = async (req, res) => {
+    try{
+      const { id }  = req.params;
+    
+    const response = await AccountService.getInfoProfile(id);
+
+    if (response.success) {
+      return res.status(200).json({
+        success: true,
+        message: "Lấy thông tin profile thành công",
+        data: response.data
+      });
+    }
+    else{
+      return res.status(404).json({
+        success: false,
+        message: response.message
+      });
+    }
+    }
+    catch(err){
+      console.log("Error in getInfoProfile: ", err);
+      return res.status(500).json({
+        success: false,
+        message: "Lỗi hệ thống"
+      })
+    }
   }
 }
 

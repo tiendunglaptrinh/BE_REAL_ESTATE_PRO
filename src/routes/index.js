@@ -12,6 +12,7 @@ import messageRouter from "./messageRouter.js";
 import OTPRouter from "./OTPRouter.js";
 import GoogleRouter from "./googleRouter.js";
 import StatusRouter from "./statusRouter.js";
+import contactRouter from "./contactRouter.js";
 
 function route(app) {
   app.use("/account", accountRouter);
@@ -27,8 +28,8 @@ function route(app) {
   app.use("/otp", OTPRouter);
   app.use("/auth", GoogleRouter);
   app.use("/status", StatusRouter);
+  app.use("/contact", contactRouter);
   app.use("/", siteRouter);
-  
 };
 
 export default route;

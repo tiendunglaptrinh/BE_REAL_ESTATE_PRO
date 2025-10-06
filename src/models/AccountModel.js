@@ -36,6 +36,13 @@ const Account = mongoose.Schema(
         default: [],
       },
     ],
+    favors_status: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "Status",
+        default: [],
+      },
+    ],
     wallet: { type: Number, required: true, default: 50000 },
     total_like_post: {
       type: Number,
@@ -49,7 +56,6 @@ const Account = mongoose.Schema(
       type: Number,
       default: 0
     },
-
 
     // auth
     access_token: { type: String },

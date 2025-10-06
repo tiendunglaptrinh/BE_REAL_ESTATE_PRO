@@ -16,7 +16,7 @@ const PostSchema = new mongoose.Schema(
     // thông số cơ bản
     acreage: { type: Number, required: true },
     price: { type: Number, required: true },
-    unit_price: { type: String, required: true },
+    unit_price: { type: String, required: true }, 
     price_vnd: { type: Number, required: true },
     discount: { type: Number, default: 0 },
 
@@ -104,7 +104,7 @@ const PostSchema = new mongoose.Schema(
     ],
     message_contact: {
       type: [mongoose.Schema.Types.ObjectId],
-      ref: "MessageContact",
+      ref: "Contact",
       default: []
     },
     // vector embedding để chatbot tìm kiếm

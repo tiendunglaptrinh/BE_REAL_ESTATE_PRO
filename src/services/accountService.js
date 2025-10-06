@@ -6,6 +6,7 @@ import "dotenv";
 import rateLimitStore from "../utils/rateLimitStore.js";
 import jwt from "jsonwebtoken";
 import axios from "axios";
+import Post from "../models/PostModel.js";
 
 class AccountService {
   createAccount = async (userData, response) => {
@@ -209,24 +210,55 @@ class AccountService {
       const userId = user.userId;
       console.log(">>> check user id: ", userId);
       const user_in_DB = await Account.findById(userId);
-      const {fullname, email, phone, _id} = user_in_DB;
-      return {id:_id, fullname, email, phone}
+      const { fullname, email, phone, _id } = user_in_DB;
+      return { id: _id, fullname, email, phone }
     } catch (err) {
       throw new Error(err.message);
     }
   };
-  
+
   getMoneyWallet = async (user) => {
-    try{
+    try {
       const userId = user.userId;
       console.log(">>> check user id: ", userId);
-      
+
       const user_in_DB = await Account.findById(userId);
       console.log(">>> check user: ", user_in_DB);
       return user_in_DB.wallet;
     }
-    catch (err){
+    catch (err) {
       return -1;
+    }
+  }
+
+  getInfoProfile = async (id) => {
+    try {
+      const user = await Account.findById(id).lean();
+
+      if (!user) {
+        return {
+          success: false,
+          message: "Người dùng không tồn tại trong hệ thống"
+        }
+      }
+
+      if (user) {
+        const listPost = await Post.find({ user_id: id, status: "published" }).lean();
+
+        return {
+          success: true,
+          data: {
+            info: user,
+            list_post: listPost
+          }
+        }
+      }
+    }
+    catch (err) {
+      return {
+        success: false,
+        message: "Lỗi hệ thống"
+      }
     }
   }
 }

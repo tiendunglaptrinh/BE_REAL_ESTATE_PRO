@@ -51,6 +51,8 @@ class LocationController {
         slug: p.slug,
         fullname: p.fullName,
       }));
+
+      console.log(provinces);
       return res.status(200).json({
         success: true,
         data: provinces,
