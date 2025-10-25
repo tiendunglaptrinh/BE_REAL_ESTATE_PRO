@@ -52,7 +52,7 @@ class StatusController {
                 content,
                 linked_post: linked_post || "",
                 mean: mean || "shared",
-                status: "published", // sau này có thể đổi sang "pending"
+                status: "pending", // sau này có thể đổi sang "pending"
             });
 
             await newStatus.save();
@@ -71,6 +71,38 @@ class StatusController {
         }
     };
 
+    getStatusPending = async (req, res) => {
+        try{
+            const { userId } = req.user;
+
+            const listStatus = await Status.find({ user_id: userId, status: "pending" })
+            .populate("user_id", "fullname email avatar")
+            .sort({ createdAt: -1 });
+
+            if (!listStatus) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Không tìm thấy status nào",
+                });
+            }
+            return res.status(200).json({
+                success: true,
+                message: "Lấy danh sách status thành công",
+                data: listStatus,
+                num_status: listStatus.length
+            });
+        }
+        catch (err) {
+            return res.status(500).json({
+                success: false,
+                message: "Lỗi server khi lấy danh sách status",
+            });
+        }
+    }
+    
+    updataStatusByUser = async (req, res) => {}
+
+    deleteStatusByUser = async (req, res) => {}
 }
 
 export default new StatusController();

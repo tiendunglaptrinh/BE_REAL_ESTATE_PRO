@@ -23,7 +23,9 @@ class ContactService {
                 success: false
             }
         }
-    }
+    };
+
+    updateContact = async () => {}
 }
 
 export default new ContactService();

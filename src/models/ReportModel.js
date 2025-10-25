@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const WarningSchema = mongoose.Schema({
+const ReportSchema = mongoose.Schema({
 
     // Người gửi báo cáo
     sender_id: {
@@ -10,7 +10,7 @@ const WarningSchema = mongoose.Schema({
     },
 
     // Đối tượng báo cáo
-    object_warning: {
+    object_report: {
         type: String,
         required: true,
         enum: ["post", "status", "user"]

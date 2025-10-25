@@ -93,7 +93,7 @@ Nếu bạn có câu hỏi cụ thể hơn về bất động sản, xin vui lò
 
         try {
             const response = await openai.embeddings.create({
-                model: "text-embedding-3-small", // model rẻ, free tier
+                model: "text-embedding-3-small",
                 input: embeddingText
             });
 

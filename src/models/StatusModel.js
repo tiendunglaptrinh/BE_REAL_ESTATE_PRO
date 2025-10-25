@@ -26,7 +26,7 @@ const StatusSchema = new mongoose.Schema(
         // Bài viết cần được admin duyệt mới có thể đăng lên
         status: {
             type: String,
-            enum: ["published", "pending", "delete", "hidden"],
+            enum: ["published", "pending", "delete", "hidden", "cancel"],
             required: true,
             default: "pending",
         },

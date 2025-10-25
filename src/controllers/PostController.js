@@ -341,6 +341,7 @@ class PostController {
       });
     }
   }
+  updatePostInfo = async (req, res) => {}
 
 }
 

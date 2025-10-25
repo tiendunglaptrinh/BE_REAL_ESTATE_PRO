@@ -5,7 +5,7 @@ import { adminAuthMiddleware, userAuthMiddleware, authMiddleware } from "../midd
 const statusRouter = express.Router();
 
 statusRouter.get("/get-lists", userAuthMiddleware,  StatusController.getPublishedStatus);
+statusRouter.get("/get-list-pending", userAuthMiddleware, StatusController.getStatusPending);
 statusRouter.post("/create-status", userAuthMiddleware,  StatusController.createStatusByUser);
-
 
 export default statusRouter;
